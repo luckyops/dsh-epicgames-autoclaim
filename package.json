@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-epicgames-auto",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Automatically claims Epic Games Store weekly free games after a one-time browser sign-in.",
   "type": "module",
   "exports": {

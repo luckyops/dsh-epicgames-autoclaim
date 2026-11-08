@@ -29,6 +29,7 @@ window.__ModuleLoader__.load({
         checkBtn: '立即检查并领取',
         recheckBtn: '重新核对',
         recheckHint: '清除领取记录，按当前登录账号重新确认所有免费游戏的拥有状态',
+        panel: 'Epic 免费游戏',
         running: '运行中',
         phaseDiscovery: '正在发现免费游戏…',
         phaseClaiming: '正在领取…',
@@ -82,6 +83,7 @@ window.__ModuleLoader__.load({
         checkBtn: 'Check and claim now',
         recheckBtn: 'Re-verify library',
         recheckHint: 'Clear claim records and re-verify ownership of every free game for the signed-in account',
+        panel: 'Epic free games',
         running: 'running',
         phaseDiscovery: 'Discovering free games…',
         phaseClaiming: 'Claiming…',
@@ -351,11 +353,49 @@ window.__ModuleLoader__.load({
       return template.replace(/\{(\w+)\}/g, (_, key) => String(entry.params?.[key] ?? ''));
     }
 
+    /** Left-rail icon: gift box with a play cut, tinted by the shell. */
+    function PanelIcon({ size = 24 }) {
+      return h('svg', {
+        viewBox: '0 0 24 24',
+        width: size,
+        height: size,
+        'aria-hidden': true,
+        style: { display: 'block' },
+      },
+      h('path', {
+        fill: 'currentColor',
+        fillRule: 'evenodd',
+        d: 'M4.5 6.5h15a1 1 0 0 1 1 1V10a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V7.5a1 1 0 0 1 1-1z'
+          + ' M6 12.5h12a1 1 0 0 1 1 1V19a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-5.5a1 1 0 0 1 1-1z'
+          + ' M10.7 14.7v3.6l3.3-1.8-3.3-1.8z',
+      }));
+    }
+
     return {
       inject: ['slots', 'locale'],
       apply(ctx) {
         ctx.effect(() => ctx.locale.register(NS, dictionaries), 'epicgames-auto: locale');
         const t = ctx.locale.bind(NS);
+
+        // Central panel behind the left-rail entry (the shell's layout
+        // service selects it when the icon is clicked).
+        ctx.slots.inject('main', () => ctx.slots.register({
+          name: 'main',
+          key: 'epicgames',
+          locale: NS,
+          inject: () => ({ t }),
+        }, Page));
+
+        // The left-sidebar entry itself.
+        ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
+          name: 'sidebar.panellist',
+          id: 'epicgames',
+          order: 10,
+          label: () => t('panel'),
+          locale: NS,
+        }, PanelIcon));
+
+        // Also reachable from Settings.
         ctx.slots.inject('settings.section', () => ctx.slots.register({
           name: 'settings.section',
           id: 'epicgames-auto',

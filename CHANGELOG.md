@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0 — 2026-11-08
+
+- Added a **left-sidebar panel** (gift-box icon beside Plugins) opening the
+  same page as the settings entry — the shell's layout service selects it,
+  and the icon tints with the active state. The Settings → Epic free games
+  entry remains.
+
 ## 1.1.1 — 2026-11-08
 
 Privacy hardening for publication (see `PRIVACY.md` for the full data inventory).
