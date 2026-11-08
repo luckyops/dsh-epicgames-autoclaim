@@ -1,38 +1,50 @@
 # dsh-plugin-epicgames-auto
 
-English | [中文](#中文)
+**English** · [中文](#中文文档)
 
-A [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) plugin that automatically
-claims the **Epic Games Store weekly free games**. You sign in once in a real browser window;
-afterwards the plugin discovers each week's free games on a schedule and claims them into your
-Epic library — no notifications to click, no checkout links to open.
+Automatically claims the **Epic Games Store weekly free games** inside
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) — you sign
+in once in a real browser window, and the plugin does everything else on a
+schedule: discovery, ownership checks, the $0 checkout, and bookkeeping.
 
-## How it works
+```
+设置 → Epic 免费游戏  ·  /epicgames status | login | check | recheck  ·  agent tool: epicgames_free_games
+```
 
-- **Sign-in (once):** the plugin launches a dedicated, persistent Chromium profile (system
-  Chrome by default) on the Epic login page. You complete the login yourself — including 2FA or
-  any captcha — and the plugin never sees your credentials. The session cookie lives in
-  `$DSH_HOME/data/epicgames-auto/browser-profile` and is reused for months.
-- **Ownership confirmation:** before every purchase the plugin asks Epic's entitlement API whether
-  the signed-in account already owns the offer (`already-owned` entries), and after every purchase
-  it polls the same API until the game appears in the library — a claim is only recorded once Epic
-  itself confirms ownership. Claim records are keyed by account id (read from the session), so
-  signing in as a different account automatically re-audits the whole rotation, and
-  **Re-verify library** (`/epicgames recheck`) forces that audit any time.
-- **Rotation-aware scheduling:** the current batch's end time is the next rotation; the plugin
-  checks again ~20 minutes after it, so new free games are claimed within minutes of going live.
-  Failed claims (e.g. an unsolved captcha) retry within an hour.
-- **Discovery:** a plain HTTP call to Epic's static promotions endpoint (no browser, no login)
-  finds the current "free now" titles, so scheduled checks cost almost nothing.
-- **Claiming:** only when unclaimed games exist, the plugin opens the store in its profile
-  (headless or visible — configurable), resolves the real weekly offer, verifies it is free and
-  not already owned, walks the `$0` purchase page, and confirms success through the account's
-  entitlements. Failures are retried on the next scheduled check, with screenshots under
-  `$DSH_HOME/data/epicgames-auto/errors/` for diagnosis.
+## Features
+
+- **Sign in once.** A dedicated, stealth-patched Chromium profile
+  (system Chrome by default) opens Epic's own login page — you complete the
+  sign-in, 2FA, and any human verification yourself; the plugin never sees
+  your password. The session persists for months.
+- **Cheap scheduled checks.** Discovery reads Epic's static promotions API —
+  one plain HTTP request, no browser, no login. A browser only launches when
+  there is actually something to claim.
+- **Rotation-aware.** The current batch's end time is the next rotation; the
+  plugin checks again ~20 minutes after it, so new games land in your library
+  within minutes of going live. Failed claims back off 1h → 2h → 4h.
+- **Ownership confirmed by Epic itself.** Before every purchase the plugin
+  asks Epic's entitlement API whether you already own the game; after every
+  purchase it polls the same API until the game really is in your library.
+  Claim records are keyed by account — switching accounts re-audits
+  everything automatically, and **Re-verify library** re-audits on demand.
+- **Captcha assist.** When Epic gates the checkout with an hCaptcha, the
+  claim window stays open (up to 5 minutes per game) and the plugin keeps
+  confirming in the background — solve it in the window and the claim
+  completes itself.
+- **Private by design.** No telemetry, data only to Epic, owner-only
+  permissions on everything stored, masked account ids, screenshots that
+  auto-expire. See [PRIVACY.md](PRIVACY.md).
+
+## Requirements
+
+- DeepSeek Harness with the Web GUI (desktop app or `dsh web`).
+- A Chromium-based browser: system Google Chrome is auto-detected; Edge and
+  Chrome Beta are tried next; otherwise set `executablePath`.
 
 ## Install
 
-From a local checkout of this repository:
+From a local checkout:
 
 ```
 plugin_manager install_bundle /absolute/path/to/dsh-plugin-epicgames-auto
@@ -40,28 +52,28 @@ plugin_manager install_bundle /absolute/path/to/dsh-plugin-epicgames-auto
 
 Or install from a plugin-market index once the package is published there.
 
-## First run
+## Quick start
 
-1. Open **Settings → Epic free games** and click **Sign in to Epic** (or run `/epicgames login`
-   in the chat box). A Chrome window opens on Epic's login page.
-2. Sign in and finish any verification. The window closes itself once the session is detected.
-3. That's it. Use **Check and claim now** to test immediately, or wait for the scheduler.
+1. Open **Settings → Epic free games** and click **Sign in to Epic**
+   (or run `/epicgames login`). A Chrome window opens on Epic's login page.
+2. Sign in and finish any verification. The window closes itself once the
+   session is detected.
+3. Done. Press **Check and claim now** for an immediate run, or just wait for
+   the scheduler.
 
 ## Usage
 
-- **Settings page:** sign-in state, this week's free games, claim history, activity log, and the
-  sign-in / check-now actions.
-- **Slash commands:** `/epicgames status` · `/epicgames login` · `/epicgames check`.
-- **Agent tool (optional):** add the row below to your agent preset (Settings → agent preset
-  editor, or your profile patch) so sessions can call `epicgames_free_games`:
+| Surface | What you get |
+|---|---|
+| Settings page | Sign-in state, this week's free games with end dates, claim history, activity log, and the sign-in / check / re-verify actions |
+| Slash commands | `/epicgames status` · `/epicgames login` · `/epicgames check` · `/epicgames recheck` |
+| Agent tool (optional) | `epicgames_free_games` (`status` / `check` / `recheck` / `login`) — add the row below to your agent preset so sessions can call it |
 
-  ```yaml
-  - id: epicgames-auto-tool
-    name: dsh-plugin-epicgames-auto/tool
-  ```
-
-  Host-mounted tools never enter agent toolsets in DSH — the preset row mounts the tool, which
-  calls back into the host-plane `epicGames` service.
+```yaml
+# in your agent preset's plugin list (Settings → agent preset editor)
+- id: epicgames-auto-tool
+  name: dsh-plugin-epicgames-auto/tool
+```
 
 ## Configuration (Settings → Plugins)
 
@@ -71,20 +83,23 @@ Or install from a plugin-market index once the package is published there.
 | `country` | `US` | Store country used for discovery (`US`, `CN`, `DE`, …). |
 | `locale` | `en-US` | Store locale for discovery and claim pages. |
 | `loginLang` | *(empty)* | Login window language (the human verification follows it); empty follows `locale`. Chinese users usually set `zh-CN`. |
-| `claimHeadless` | `false` | Claim without a visible browser window. Turn on only if your account never hits bot checks. |
-| `executablePath` | *(empty)* | Full path to a Chromium-based browser executable; empty = system Chrome / Edge auto-detect. |
+| `claimHeadless` | `false` | Claim without a visible browser window; off (default) is most reliable against bot checks. |
+| `executablePath` | *(empty)* | Full path to a Chromium-based browser executable; empty auto-detects system Chrome. |
 | `runOnStartup` | `true` | Run one check shortly after the Host starts. |
 
 ## Troubleshooting
 
-- **Human check during claim** — Epic gates the $0 checkout with an hCaptcha. The claim window
-  stays open (up to 5 minutes per game) and the plugin keeps confirming in the background:
-  just solve the captcha in the window and the claim completes by itself. Fully unattended runs
-  retry on the next scheduled check (with backoff).
-- **"需要登录" after a few months** — Epic sessions expire; click **Sign in to Epic** again.
-- **Bot check during claim** (`challenge` status) — keep `claimHeadless` off (default).
-- **No Chrome installed** — set `executablePath` to any Chromium-based browser.
-- **Skipped `not-free` / `not-purchasable`** — region or eligibility restrictions for that title.
+- **Human check during claim** — normal. Solve it in the open window; the
+  plugin continues automatically. Unattended runs retry with backoff.
+- **"Sign-in required" after a few months** — Epic sessions expire; sign in
+  again.
+- **`challenge` status** — a bot check blocked the store page; keep
+  `claimHeadless` off (default).
+- **`api.fingerprint` in the activity log** — Epic rotated its storefront
+  query fingerprints; update the plugin.
+- **Skipped `not-free` / `not-purchasable`** — region or eligibility
+  restrictions for that title.
+- **No browser found** — set `executablePath`.
 
 ## Development
 
@@ -96,52 +111,138 @@ pnpm test     # vitest: discovery projection, JWT/session parsing, claim-record
 pnpm check    # syntax check of every module
 ```
 
-Architecture: `index.js` is the composition root; behavior lives in `lib/`
-(`epic` pure domain, `epic-api` store data access, `page-driver` UI
-automation, `browser` engine lifecycle, `claim` use cases, `controller`
-operation coordinator, `scheduler` policy, `http-api`/`command` projections).
+`index.js` is the composition root; behavior lives in `lib/` — `epic` (pure
+domain), `epic-api` (store data access), `page-driver` (UI automation),
+`browser` (engine lifecycle), `claim` (use cases), `controller` (operation
+coordinator), `scheduler` (policy), `http-api` / `command` (projections).
 Activity entries are `{code, params}` and localize in the settings page
-(zh/en). See `ARCHITECTURE-REVIEW.md` for the audit this structure answers
-and `CHANGELOG.md` for release history.
+(zh/en). See `ARCHITECTURE-REVIEW.md` for the audit this structure answers and
+`CHANGELOG.md` for release history.
 
 ## Privacy
 
-Everything stays on your machine: no telemetry, no data sent anywhere but Epic,
-owner-only permissions on all stored data (session cookies, state, screenshots),
-and screenshots auto-expire after 7 days. Full inventory and purge instructions:
-[PRIVACY.md](PRIVACY.md). 快速清除：`rm -rf ~/.dsh/data/epicgames-auto`。
+Everything stays on your machine: no telemetry, no data sent anywhere but
+Epic, owner-only permissions on all stored data, and screenshots
+auto-expire after 7 days. Full inventory and the one-line purge command:
+[PRIVACY.md](PRIVACY.md).
 
-## Distribution
+## License
 
-The package is a standard DSH bundle (`dsh.bundle.patch` + `dsh.client`): `npm publish` it, then
-list it in any plugin-market index for one-click installation. Adjust `name`, `repository`, and
-the LICENSE copyright line before publishing.
+[MIT](LICENSE)
 
 ---
 
-## 中文
+# 中文文档
 
-一个 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 插件：**自动领取 Epic
-游戏商城每周免费游戏**。你只需在真实浏览器窗口中登录一次，之后插件按计划发现每周的免费游戏并
-自动领取到你的 Epic 库中。
+**[English](#dsh-plugin-epicgames-auto)** · **中文**
 
-- 登录一次：插件用独立的持久化浏览器配置（默认系统 Chrome）打开 Epic 登录页，由你自己完成登录
-  （含两步验证/验证码），插件不接触任何凭据；会话保存在
-  `$DSH_HOME/data/epicgames-auto/browser-profile`。
-- 发现：定时检查只用一次普通 HTTP 请求（Epic 静态促销接口），无需浏览器和登录。
-- 领取：仅当存在未领取的游戏时才启动浏览器：解析真实周免 offer → 校验免费与未拥有 → 完成
-  $0 下单 → 通过账号权益确认成功；失败自动留到下次重试，并截图到
-  `$DSH_HOME/data/epicgames-auto/errors/`。
+在 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 中**自动领取
+Epic 游戏商城每周免费游戏**——你只需在真实浏览器窗口中登录一次，剩下的全部交给
+插件按计划完成：发现、所有权核对、$0 下单、记账。
 
-### 使用
+```
+设置 → Epic 免费游戏  ·  /epicgames status | login | check | recheck  ·  助手工具：epicgames_free_games
+```
 
-1. 在 **设置 → Epic 免费游戏** 点击 **登录 Epic**（或在聊天框输入 `/epicgames login`）；
-2. 在弹出的 Chrome 窗口完成登录（中文界面，含两步验证/验证码都由你自己完成），窗口检测到会话后自动关闭；
-3. 完成。可点 **立即检查并领取** 测试，或等待定时任务。
+## 功能特性
 
-领取时若出现 hCaptcha：窗口会保持打开（每款游戏最多等 5 分钟），你在窗口里完成验证即可，插件会自动确认入库；无人值守时段失败会在下次计划自动重试。
+- **登录一次，长期有效。** 插件用独立的隐身加固 Chromium 配置（默认系统
+  Chrome）打开 Epic 官方登录页——登录、两步验证、人机验证都由你亲自完成，
+  插件不接触你的密码；会话可维持数月。
+- **定时检查零开销。** 发现环节只调用 Epic 的静态促销接口——一次普通 HTTP
+  请求，无需浏览器、无需登录；只有真的有游戏可领时才启动浏览器。
+- **轮换感知调度。** 当前批次的截止时间就是下一批上架时间，插件会在轮换后约
+  20 分钟自动加查，新游戏上架几分钟内入库；领取失败按 1 小时 → 2 小时 →
+  4 小时退避重试。
+- **所有权由 Epic 官方确认。** 下单前先查 Epic 权益接口（已拥有则跳过，绝不
+  重复下单）；下单后轮询同一接口直到游戏真的出现在库里才记账。领取记录按
+  账号标记——换账号登录自动全量重审，也可随时点 **重新核对** 手动重审。
+- **验证码辅助。** Epic 在结算环节可能要求 hCaptcha：领取窗口会保持打开
+  （每款游戏最多 5 分钟），你在窗口里完成验证即可，插件自动确认入库。
+- **隐私优先。** 无遥测、数据只发往 Epic、本地数据全部仅属主权限、账号 ID
+  打码显示、诊断截图自动过期。详见 [PRIVACY.md](PRIVACY.md)。
 
-命令：`/epicgames status` · `/epicgames login` · `/epicgames check`；也可直接让助手调用
-`epicgames_free_games` 工具。配置项见上表（设置 → 插件）。
+## 环境要求
 
-MIT License.
+- 带网页界面（Web GUI）的 DeepSeek Harness（桌面应用或 `dsh web`）。
+- 一个 Chromium 内核浏览器：自动检测系统 Google Chrome，其次 Edge / Chrome
+  Beta；都没有则配置 `executablePath`。
+
+## 安装
+
+本地目录安装：
+
+```
+plugin_manager install_bundle /绝对路径/dsh-plugin-epicgames-auto
+```
+
+包发布到插件市场索引后，也可从市场一键安装。
+
+## 快速上手
+
+1. 打开 **设置 → Epic 免费游戏**，点击 **登录 Epic**（或在聊天框输入
+   `/epicgames login`），弹出 Chrome 登录窗口；
+2. 完成登录与验证，窗口检测到会话后自动关闭；
+3. 完成。可点 **立即检查并领取** 立即执行一次，或等待定时任务。
+
+## 使用方式
+
+| 入口 | 内容 |
+|---|---|
+| 设置页 | 登录状态、本周免费游戏及截止时间、领取历史、动态日志，以及 登录 / 立即检查 / 重新核对 按钮 |
+| 斜杠命令 | `/epicgames status` · `/epicgames login` · `/epicgames check` · `/epicgames recheck` |
+| 助手工具（可选） | `epicgames_free_games`（`status` / `check` / `recheck` / `login`）——把下行加入 agent 预设后，会话即可调用 |
+
+```yaml
+# 加入 agent 预设的插件列表（设置 → 预设编辑器）
+- id: epicgames-auto-tool
+  name: dsh-plugin-epicgames-auto/tool
+```
+
+## 配置项（设置 → 插件）
+
+| 字段 | 默认值 | 说明 |
+|---|---|---|
+| `intervalHours` | `12` | 两次自动检查的间隔小时数。 |
+| `country` | `US` | 发现免费游戏用的商店国家代码（`US`、`CN`、`DE`…）。 |
+| `locale` | `en-US` | 商店与领取页面语言。 |
+| `loginLang` | *(空)* | 登录窗口语言（人机验证跟随该语言）；留空跟随 `locale`，中文用户一般设 `zh-CN`。 |
+| `claimHeadless` | `false` | 领取时是否隐藏浏览器窗口；关闭（默认）对反机器人检测最稳。 |
+| `executablePath` | *(空)* | Chromium 内核浏览器可执行文件完整路径；留空自动检测系统 Chrome。 |
+| `runOnStartup` | `true` | Host 启动后不久先检查一次。 |
+
+## 故障排查
+
+- **领取时出现人机验证** — 正常现象：在打开的窗口中完成即可，插件自动继续；
+  无人值守时段失败会退避重试。
+- **数月后提示“需要登录”** — Epic 会话过期，重新登录一次即可。
+- **`challenge` 状态** — 反机器人验证拦截了商店页；保持 `claimHeadless` 关闭
+  （默认）。
+- **动态里出现 `api.fingerprint`** — Epic 更新了前端查询指纹，请更新插件。
+- **跳过 `not-free` / `not-purchasable`** — 该游戏有地区或资格限制。
+- **找不到浏览器** — 配置 `executablePath`。
+
+## 开发
+
+```
+pnpm install
+pnpm test     # vitest：发现投影、JWT/会话解析、领取记录账号匹配、
+              # 状态迁移与原子写、调度策略、HTTP 请求守卫
+pnpm check    # 全模块语法检查
+```
+
+`index.js` 是组合根；行为都在 `lib/` 中——`epic`（纯领域）、`epic-api`（商店
+数据访问）、`page-driver`（界面自动化）、`browser`（引擎生命周期）、`claim`
+（用例）、`controller`（操作协调器）、`scheduler`（调度策略）、`http-api` /
+`command`（投影面）。动态日志为 `{code, params}` 结构，设置页按 zh/en 字典
+本地化。`ARCHITECTURE-REVIEW.md` 记录了本结构所回应的评审，`CHANGELOG.md`
+记录版本历史。
+
+## 隐私
+
+一切都在你的机器上：无遥测、数据只发往 Epic、本地数据仅属主权限、诊断截图
+7 天自动过期。完整数据清单与一键清除命令见 [PRIVACY.md](PRIVACY.md)。
+
+## 许可
+
+[MIT](LICENSE)
