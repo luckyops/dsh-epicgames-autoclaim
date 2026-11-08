@@ -13,10 +13,14 @@ schedule: discovery, ownership checks, the $0 checkout, and bookkeeping.
 
 ## Features
 
-- **Sign in once.** A dedicated, stealth-patched Chromium profile
+- **Multi-account.** Every registered Epic account gets its own persistent browser profile and
+  its own claim records; a check claims for all of them, account by account. Add an account by
+  signing in (a scratch profile keeps existing sessions untouched); sign out per account from the
+  Accounts card, `/epicgames logout [name|all]`, or the tool's `logout` action.
+- **Sign in once per account.** A dedicated, stealth-patched Chromium profile
   (system Chrome by default) opens Epic's own login page — you complete the
   sign-in, 2FA, and any human verification yourself; the plugin never sees
-  your password. The session persists for months.
+  your password. Sessions persist for months.
 - **Cheap scheduled checks.** Discovery reads Epic's static promotions API —
   one plain HTTP request, no browser, no login. A browser only launches when
   there is actually something to claim.
@@ -72,7 +76,7 @@ search for `dsh-epic-autoclaim`, and install from there.
 | Surface | What you get |
 |---|---|
 | Settings page | Sign-in state, this week's free games with end dates, claim history, activity log, and the sign-in / check / re-verify actions |
-| Slash commands | `/epicgames status` · `/epicgames login` · `/epicgames check` · `/epicgames recheck` |
+| Slash commands | `/epicgames status` · `/epicgames login` · `/epicgames check` · `/epicgames recheck` · `/epicgames logout [name\|all]` |
 | Agent tool (optional) | `epicgames_free_games` (`status` / `check` / `recheck` / `login`) — add the row below to your agent preset so sessions can call it |
 
 ```yaml
@@ -152,7 +156,10 @@ Epic 游戏商城每周免费游戏**——你只需在真实浏览器窗口中�
 
 ## 功能特性
 
-- **登录一次，长期有效。** 插件用独立的隐身加固 Chromium 配置（默认系统
+- **多账号。** 每个登记的 Epic 账号拥有独立的浏览器配置与领取记录；一次检查按账号逐个
+  领取。点“添加账号 / 登录”即可新增（登录用一次性临时配置，不影响已有会话）；在“账号”
+  卡片按账号退出，或用 `/epicgames logout <名称|all>`。
+- **每账号登录一次，长期有效。** 插件用独立的隐身加固 Chromium 配置（默认系统
   Chrome）打开 Epic 官方登录页——登录、两步验证、人机验证都由你亲自完成，
   插件不接触你的密码；会话可维持数月。
 - **定时检查零开销。** 发现环节只调用 Epic 的静态促销接口——一次普通 HTTP
@@ -199,7 +206,7 @@ DSH 会话（本界面即可），对助手说：
 | 入口 | 内容 |
 |---|---|
 | 设置页 | 登录状态、本周免费游戏及截止时间、领取历史、动态日志，以及 登录 / 立即检查 / 重新核对 按钮 |
-| 斜杠命令 | `/epicgames status` · `/epicgames login` · `/epicgames check` · `/epicgames recheck` |
+| 斜杠命令 | `/epicgames status` · `/epicgames login` · `/epicgames check` · `/epicgames recheck` · `/epicgames logout <名称\|all>` |
 | 助手工具（可选） | `epicgames_free_games`（`status` / `check` / `recheck` / `login`）——把下行加入 agent 预设后，会话即可调用 |
 
 ```yaml

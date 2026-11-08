@@ -15,7 +15,7 @@ which v1.4+ moves to the new name automatically), with owner-only permissions
 
 | Data | File | Content | Retention |
 |---|---|---|---|
-| Browser profile | `browser-profile/` | Epic **session cookies** (login state), no password ever | Until you delete it |
+| Browser profiles | `browser-profile-<account>/` | Per-account Epic **session cookies** (login state), no password ever | Until you sign the account out (its profile is deleted) or delete the directory |
 | Plugin state | `state.json` | Account id + display name, claim history (game titles/outcomes), activity log, schedule | Until you delete it |
 | Diagnostic screenshots | `errors/*.png` | Full-page screenshots on automation failures — **may show your display name or library page** | Newest 20, auto-deleted after 7 days |
 
