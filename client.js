@@ -157,10 +157,13 @@ window.__ModuleLoader__.load({
 .ega_wide{max-width:1040px;padding:24px 28px 40px}
 .ega_title{margin:0;font-size:18px;font-weight:600;line-height:26px;letter-spacing:-0.01em}
 .ega_intro{margin:4px 0 0;font-size:13px;line-height:20px;color:var(--dsw-alias-label-secondary)}
-.ega_card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ega_card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .ega_cardTitle{margin:0;font-size:13px;font-weight:600;line-height:18px;display:flex;align-items:baseline;gap:8px}
 .ega_count{font-size:12px;font-weight:400;color:var(--dsw-alias-label-secondary)}
 .ega_grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+/* grid items default to min-width:auto: one unshrinkable child blows the
+   track out of the container — cards must be allowed to shrink */
+.ega_grid>.ega_card{min-width:0}
 .ega_statusRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .ega_state{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;line-height:20px}
 .ega_dot{width:8px;height:8px;border-radius:50%;background:var(--dsw-alias-state-idle-primary);flex:none}
@@ -181,17 +184,17 @@ window.__ModuleLoader__.load({
 .ega_game{display:flex;gap:12px;align-items:center}
 .ega_cover{width:88px;height:50px;border-radius:8px;object-fit:cover;background:var(--dsw-alias-bg-layer-2);flex:none;display:block}
 .ega_monogram{width:88px;height:50px;border-radius:8px;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex:none}
-.ega_gameBody{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ega_gameBody{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-width:0}
 .ega_gameTitle{color:var(--dsw-alias-label-primary);font-size:13px;font-weight:500;line-height:18px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ega_gameTitle:hover{text-decoration:underline}
 .ega_gameMeta{font-size:12px;line-height:16px;color:var(--dsw-alias-label-secondary)}
 .ega_claim{display:flex;gap:10px;align-items:center;min-width:0}
 .ega_thumb{width:36px;height:36px;border-radius:8px;object-fit:cover;background:var(--dsw-alias-bg-layer-2);flex:none;display:block}
 .ega_monogramSm{width:36px;height:36px;border-radius:8px;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none}
-.ega_claimBody{display:flex;flex-direction:column;gap:1px;min-width:0}
-.ega_claimTime{font-size:11px;line-height:14px;color:var(--dsw-alias-label-secondary)}
-.ega_tag{border:1px solid var(--dsw-alias-border-l2);border-radius:6px;padding:1px 6px;font-size:11px;line-height:16px;color:var(--dsw-alias-label-secondary);flex:none}
-.ega_tags{margin-left:auto;display:inline-flex;gap:6px;align-items:center;flex:none}
+.ega_claimBody{display:flex;flex-direction:column;gap:1px;flex:1 1 auto;min-width:0}
+.ega_claimTime{font-size:11px;line-height:14px;color:var(--dsw-alias-label-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ega_tag{border:1px solid var(--dsw-alias-border-l2);border-radius:6px;padding:1px 6px;font-size:11px;line-height:16px;color:var(--dsw-alias-label-secondary);flex:none;max-width:18ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ega_tags{margin-left:auto;display:inline-flex;gap:6px;align-items:center;flex:0 1 auto;min-width:0;justify-content:flex-end;overflow:hidden}
 .ega_tagClaimed{color:var(--dsw-alias-state-success-primary);border-color:var(--dsw-alias-state-success-primary)}
 .ega_tagFailed{color:var(--dsw-alias-state-error-primary);border-color:var(--dsw-alias-state-error-primary)}
 .ega_log{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}
