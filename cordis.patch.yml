@@ -1,0 +1,4 @@
+- insert:
+    - id: epicgames-auto
+      name: 'dsh-plugin-epicgames-auto'
+      config: {}

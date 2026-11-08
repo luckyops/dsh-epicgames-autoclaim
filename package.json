@@ -1,0 +1,67 @@
+{
+  "name": "dsh-plugin-epicgames-auto",
+  "version": "1.1.1",
+  "description": "Automatically claims Epic Games Store weekly free games after a one-time browser sign-in.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./tool": "./tool.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "tool.js",
+    "cordis.patch.yml",
+    "lib/*.js",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "PRIVACY.md"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "check": "node --check index.js && node --check client.js && node --check tool.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "patchright": "^1.64.3",
+    "@deepseek-ai/schemastery": "~3.19.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luckybear/dsh-plugin-epicgames-auto"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh-plugin",
+    "epic-games",
+    "free-games"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  }
+}
