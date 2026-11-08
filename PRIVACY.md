@@ -8,9 +8,11 @@ has no telemetry, and sends your data nowhere except Epic's own servers.
 
 ## What is stored where / 存了什么、存在哪
 
-Everything lives under `$DSH_HOME/data/epic-autoclaim/` (`~/.dsh/data/epic-autoclaim/`
-by default; installs of v1.3.x and earlier used `~/.dsh/data/epicgames-auto/`,
-which v1.4+ moves to the new name automatically), with owner-only permissions
+Everything lives under `$DSH_HOME/data/epicgames-autoclaim/`
+(`~/.dsh/data/epicgames-autoclaim/` by default; earlier releases used
+`~/.dsh/data/epicgames-auto/` (≤ v1.3.x) and the unreleased interim build
+`~/.dsh/data/epic-autoclaim/` — the plugin moves both to the current name
+automatically), with owner-only permissions
 (`0700` directories, `0600` state file):
 
 | Data | File | Content | Retention |
@@ -30,19 +32,20 @@ which v1.4+ moves to the new name automatically), with owner-only permissions
   auditable in one place.
 
 The plugin **never** sees or stores your Epic password: sign-in happens in a real
-browser window you control. The local HTTP API (`/epic-autoclaim/api/*`) is bound
+browser window you control. The local HTTP API (`/epicgames-autoclaim/api/*`) is bound
 to the Harness GUI's loopback server and requires a plugin header plus a loopback
 origin on every route; the status document masks your account id.
 
 ## Delete everything / 删除全部数据
 
 ```
-rm -rf ~/.dsh/data/epic-autoclaim
+rm -rf ~/.dsh/data/epicgames-autoclaim
 ```
 
-That removes cookies, state, and screenshots. (If you ever ran v1.3.x or
-earlier and skipped the automatic move, also remove `~/.dsh/data/epicgames-auto`
-if it still exists.) Sign out of Epic in the plugin
+That removes cookies, state, and screenshots. (If an older release's data
+directory survived a skipped automatic move, also remove
+`~/.dsh/data/epicgames-auto` or `~/.dsh/data/epic-autoclaim` if either still
+exists.) Sign out of Epic in the plugin
 first (or clear the profile above) if you also want the Epic-side web session
 revoked from this machine.
 

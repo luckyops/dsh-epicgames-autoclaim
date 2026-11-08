@@ -11,7 +11,7 @@
  * dictionaries.
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-epic-autoclaim',
+  id: 'dsh-epicgames-autoclaim',
   factory(require) {
     const React = require('react');
     const h = React.createElement;
@@ -324,7 +324,7 @@ window.__ModuleLoader__.load({
 
       const fetchStatus = React.useCallback(async () => {
         try {
-          const response = await fetch('/epic-autoclaim/api/status', {
+          const response = await fetch('/epicgames-autoclaim/api/status', {
             headers: { accept: 'application/json', 'x-ega-plugin': '1' },
           });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -401,16 +401,16 @@ window.__ModuleLoader__.load({
           transportOk,
           busy,
           onLogin: () => {
-            void post('/epic-autoclaim/api/login');
+            void post('/epicgames-autoclaim/api/login');
           },
           onCheck: () => {
-            void post('/epic-autoclaim/api/check');
+            void post('/epicgames-autoclaim/api/check');
           },
           onRecheck: () => {
-            void post('/epic-autoclaim/api/recheck');
+            void post('/epicgames-autoclaim/api/recheck');
           },
           onLogout: key => {
-            void post(`/epic-autoclaim/api/logout/${encodeURIComponent(key)}`);
+            void post(`/epicgames-autoclaim/api/logout/${encodeURIComponent(key)}`);
           },
         }),
         h('div', { className: 'ega_grid' },
@@ -494,7 +494,7 @@ window.__ModuleLoader__.load({
     return {
       inject: ['slots', 'locale'],
       apply(ctx) {
-        ctx.effect(() => ctx.locale.register(NS, dictionaries), 'epic-autoclaim: locale');
+        ctx.effect(() => ctx.locale.register(NS, dictionaries), 'epicgames-autoclaim: locale');
         const t = ctx.locale.bind(NS);
 
         // Central panel behind the left-rail entry (the shell's layout
@@ -518,7 +518,7 @@ window.__ModuleLoader__.load({
         // Also reachable from Settings (narrow surface).
         ctx.slots.inject('settings.section', () => ctx.slots.register({
           name: 'settings.section',
-          id: 'epic-autoclaim',
+          id: 'epicgames-autoclaim',
           order: 25,
           label: () => t('nav'),
           inject: () => ({ t }),

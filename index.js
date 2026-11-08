@@ -72,17 +72,21 @@ export const Config = Schema.object({
 
 export function apply(ctx, config) {
   const home = process.env.DSH_HOME || path.join(os.homedir(), '.dsh');
-  const dataDir = path.join(home, 'data', 'epic-autoclaim');
-  // One-time migration from the pre-rename data directory (<= 1.3.x, package
-  // dsh-plugin-epicgames-auto): move it into place so the Epic sessions,
-  // claim history, and diagnostic screenshots survive the rename.
-  const legacyDataDir = path.join(home, 'data', 'epicgames-auto');
-  if (!fs.existsSync(dataDir) && fs.existsSync(legacyDataDir)) {
-    try {
-      fs.renameSync(legacyDataDir, dataDir);
-    } catch {
-      // best-effort: on failure a fresh directory is created below and the
-      // legacy data simply stays behind (sign in again to re-establish)
+  const dataDir = path.join(home, 'data', 'epicgames-autoclaim');
+  // One-time migrations from pre-rename data directories (<= 1.3.x used
+  // `epicgames-auto` under package dsh-plugin-epicgames-auto; the unreleased
+  // interim build used `epic-autoclaim`): move the first one that exists
+  // into place so the Epic sessions, claim history, and diagnostic
+  // screenshots survive the rename.
+  for (const legacyName of ['epic-autoclaim', 'epicgames-auto']) {
+    const legacyDataDir = path.join(home, 'data', legacyName);
+    if (!fs.existsSync(dataDir) && fs.existsSync(legacyDataDir)) {
+      try {
+        fs.renameSync(legacyDataDir, dataDir);
+      } catch {
+        // best-effort: on failure a fresh directory is created below and the
+        // legacy data simply stays behind (sign in again to re-establish)
+      }
     }
   }
   const errorsDir = path.join(dataDir, 'errors');

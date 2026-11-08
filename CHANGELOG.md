@@ -2,10 +2,10 @@
 
 ## 1.4.0 — 2026-11-08
 
-Multi-account support; the project is renamed to **`dsh-epic-autoclaim`**
-(from `dsh-plugin-epicgames-auto`), every user-facing surface becomes
-language-switching bilingual, and the installation documentation is
-corrected.
+Multi-account support; the project is renamed to
+**`dsh-epicgames-autoclaim`** (from `dsh-plugin-epicgames-auto`), every
+user-facing surface becomes language-switching bilingual, and the installation
+documentation is corrected.
 
 Localization:
 
@@ -25,11 +25,12 @@ Localization:
 Rename and install docs:
 
 - **Rename.** Package name, plugin row id, client entry id, settings-section
-  id, local HTTP route prefix (`/epic-autoclaim/api/*`), effect labels, and
-  the repository URL all follow the new name. The data directory moves from
-  `~/.dsh/data/epicgames-auto/` to `~/.dsh/data/epic-autoclaim/` — migrated
-  automatically on first start, so Epic sessions, claim history, and
-  screenshots survive; no re-login needed.
+  id, local HTTP route prefix (`/epicgames-autoclaim/api/*`), effect labels,
+  and the repository URL all follow the new name. The data directory moves to
+  `~/.dsh/data/epicgames-autoclaim/` from `~/.dsh/data/epicgames-auto/`
+  (≤ v1.3.x; the unreleased interim build used `~/.dsh/data/epic-autoclaim/`)
+  — migrated automatically on first start, so Epic sessions, claim history,
+  and screenshots survive; no re-login needed.
 - **Install docs corrected.** `plugin_manager install_bundle` is an assistant
   tool action, not a shell command (DeepSeek Harness has no CLI for plugin
   installs); the README now describes asking a DSH session to install a

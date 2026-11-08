@@ -1,5 +1,5 @@
 {
-  "name": "dsh-epic-autoclaim",
+  "name": "dsh-epicgames-autoclaim",
   "version": "1.4.0",
   "description": "Automatically claims Epic Games Store weekly free games after a one-time browser sign-in.",
   "type": "module",
@@ -43,12 +43,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/luckybear/dsh-epic-autoclaim"
+    "url": "https://github.com/luckybear/dsh-epicgames-autoclaim"
   },
   "keywords": [
     "deepseek-harness",
     "dsh-plugin",
-    "dsh-epic-autoclaim",
+    "dsh-epicgames-autoclaim",
     "epic-games",
     "free-games",
     "autoclaim"

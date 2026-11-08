@@ -1,5 +1,5 @@
 /**
- * Agent-plane entry (`dsh-epic-autoclaim/tool`): exposes the
+ * Agent-plane entry (`dsh-epicgames-autoclaim/tool`): exposes the
  * `epicgames_free_games` tool to agents. Mount this row inside an agent preset
  * (Settings → agent preset editor) to give sessions the tool; the host-plane row
  * alone never enters agent toolsets. Operations run through the `epicGames`
@@ -48,7 +48,7 @@ export function apply(ctx) {
         }
         return controller.status();
       },
-    }), 'epic-autoclaim: agent tool');
+    }), 'epicgames-autoclaim: agent tool');
   });
 }
 
