@@ -40,6 +40,18 @@ describe('epicSessionFromCookies', () => {
     expect(session.loggedIn).toBe(false);
   });
 
+  it('picks the valid EPIC_EG1 when an older expired EPIC_EG1 cookie is also present', () => {
+    const expired = Math.floor(Date.now() / 1000) - 3600;
+    const valid = Math.floor(Date.now() / 1000) + 3600;
+    const session = epicSessionFromCookies([
+      cookie('EPIC_EG1', `v~${jwt({ exp: expired, acct: 'stale' })}~x`, '.epicgames.com'),
+      cookie('EPIC_EG1', `v~${jwt({ exp: valid, acct: 'fresh-id', dn: 'FreshName' })}~x`, 'store.epicgames.com'),
+    ]);
+    expect(session.loggedIn).toBe(true);
+    expect(session.accountId).toBe('fresh-id');
+    expect(session.displayName).toBe('FreshName');
+  });
+
   it('falls back to durable account cookies when EG1 is absent', () => {
     for (const name of ['EPIC_SESSION_AP', 'EPIC_SSO_RM', 'EPIC_SSO']) {
       const session = epicSessionFromCookies([cookie(name, 'opaque-value')]);

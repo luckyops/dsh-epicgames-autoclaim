@@ -27,6 +27,9 @@ export function executeToolCall(controller, args = {}) {
   if (action === 'check') {
     return withNote(dispatchOperation(controller, 'check'), 'background run started; poll with action=status');
   }
+  if (action === 'hide-sidebar' || action === 'show-sidebar') {
+    return dispatchOperation(controller, action);
+  }
   return dispatchOperation(controller, 'status');
 }
 
@@ -47,7 +50,7 @@ export function apply(ctx) {
         action: Schema.string()
           .enum([...ACTION_NAMES])
           .default('status')
-          .description('Operation to run: status | check | recheck | login | logout.'),
+          .description('Operation to run: status | check | recheck | login | logout | hide-sidebar | show-sidebar.'),
         target: Schema.string()
           .description('For logout: the account name, its profile key, or "all" (default).'),
       }),

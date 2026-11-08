@@ -1,6 +1,6 @@
 {
   "name": "dsh-epicgames-autoclaim",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Multi-account Epic Games Store auto-claim: sign in once per account, zero-overhead scheduled discovery, and auto-checkout into your library.",
   "private": false,
   "type": "module",

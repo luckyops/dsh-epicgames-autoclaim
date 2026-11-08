@@ -375,6 +375,12 @@ describe('multi-account claiming, privacy masking, and projections', () => {
     expect(cmdStatus.kind).toBe('success');
     expect(cmdStatus.text).toContain('Alice');
 
+    // Verify hide-sidebar and show-sidebar via Slash Command and Agent Tool
+    expect(executeCommandInput(controller, 'sidebar hide', 'zh').kind).toBe('success');
+    expect(controller.status().hideSidebar).toBe(true);
+    await executeToolCall(facade, { action: 'show-sidebar' });
+    expect(controller.status().hideSidebar).toBe(false);
+
     const cmdLogout = executeCommandInput(controller, 'logout all', 'zh');
     expect(cmdLogout.kind).toBe('success');
     await controller.whenIdle();

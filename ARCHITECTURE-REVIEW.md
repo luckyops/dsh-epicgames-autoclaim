@@ -1,10 +1,10 @@
 # 架构与代码评审 — dsh-epicgames-autoclaim
 
-> **修复状态（v1.5.0，2026-11-08）**：面向开源发布与多账号生产可靠性的全量 SOLID / GoF 架构审计与重构已完成。
-> - **P0 级功能与安全缺陷（8 项）**：全部修复并通过自动化单测/集成测试验证 ✅
+> **修复状态（v1.6.1，2026-11-08）**：面向开源发布与多账号生产可靠性的全量 SOLID / GoF 二轮架构审计与重构已完成。
+> - **P0 / P1 级功能、安全与并发缺陷**：全部修复并通过自动化单测/集成测试验证 ✅
 > - **SOLID 原则（SRP / OCP / LSP / ISP / DIP）**：全部达标 ✅
-> - **GoF 设计模式落地**：Repository、Command、State、Strategy、Chain of Responsibility、Facade、Adapter、Template Method + Circuit Breaker ✅
-> - **测试覆盖**：6 个测试套件、48 项单元与集成测试（覆盖多账号登录/去重/窗口关闭/领取/退出全链路）+ Chromium 布局溢出检查全部通过 ✅
+> - **GoF 设计模式落地**：Repository、Observer、Command、State、Strategy、Chain of Responsibility、Facade、Adapter、Template Method + Circuit Breaker ✅
+> - **测试覆盖**：6 个测试套件、51 项单元与集成测试（覆盖多账号登录/去重/窗口关闭/动态 iframe 轮询/多 Cookie 选择/Observer/四端对称操作）+ Chromium 布局溢出检查全部通过 ✅
 
 ---
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { derivePhase, isCircuitOpen, nextRunAt } from '../lib/scheduler.js';
 import { allowRequest } from '../lib/http-api.js';
-import { buildOrderButtonSelector, shouldCheckAgreement } from '../lib/page-driver.js';
+import { buildOrderButtonSelector, clickOrderButton, shouldCheckAgreement } from '../lib/page-driver.js';
 import { queryOfferFree, resolveOffer } from '../lib/epic-api.js';
 
 describe('nextRunAt & circuit breaker', () => {
@@ -92,6 +92,42 @@ describe('shouldCheckAgreement & buildOrderButtonSelector', () => {
   it('prepends extraOrderSelectors before built-in selectors', () => {
     const combined = buildOrderButtonSelector(['#custom-cta']);
     expect(combined.startsWith('#custom-cta, ')).toBe(true);
+  });
+
+  it('discovers and clicks an order button inside a dynamically mounted second iframe without blocking on frame[0]', async () => {
+    let calls = 0;
+    const outerFrame = {
+      evaluate: async () => [],
+      locator: () => ({
+        first: () => ({
+          waitFor: async () => {
+            throw new Error('timeout on outer frame');
+          },
+        }),
+      }),
+    };
+    let clicked = false;
+    const checkoutIframe = {
+      evaluate: async () => [],
+      locator: () => ({
+        first: () => ({
+          waitFor: async () => {},
+          click: async () => {
+            clicked = true;
+          },
+        }),
+      }),
+    };
+    const page = {
+      frames: () => {
+        calls += 1;
+        // First cycle only has outerFrame; second cycle attaches checkoutIframe
+        return calls < 2 ? [outerFrame] : [outerFrame, checkoutIframe];
+      },
+    };
+    const result = await clickOrderButton(page, 2000);
+    expect(result).toBe('clicked');
+    expect(clicked).toBe(true);
   });
 });
 

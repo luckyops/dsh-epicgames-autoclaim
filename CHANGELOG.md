@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.1 — 2026-11-08
+
+Second-pass SOLID, GoF, and checkout-resilience audit:
+
+- **Dynamic iframe polling in `clickOrderButton`**: Polls across live `page.frames()` in short slices instead of blocking on `frames()[0]` for 20s, immediately discovering late-mounted checkout iframes and re-running EULA checkbox checks.
+- **Multi-cookie `EPIC_EG1` selection**: `epicSessionFromCookies` inspects all `EPIC_EG1` cookies across subdomains and picks the valid cookie with the latest expiration instead of stopping at an older expired cookie.
+- **Observer pattern & superseded profile cleanup**: Added `state.subscribe()` on the domain model, automatic deletion of superseded `browser-profile-<key>` directories on duplicate-account consolidation, `0600` hardening + auto-pruning inside `shot()`, and corrupt-backup pruning (`.corrupt-*.bak` capped at 3).
+- **4-surface operation symmetry**: Exposed `hide-sidebar` and `show-sidebar` across `lib/operations.js`, `/epicgames sidebar hide|show`, HTTP routes, and the `epicgames_free_games` agent tool; improved `lastError` reporting for per-game checkout failures.
+
 ## 1.6.0 — 2026-11-08
 
 - **Hide in sidebar option (`hideSidebar`)**: Added an instant toggle switch inside **Settings → Epic free games** (and in **Settings → Plugins** config) to hide or show the left-sidebar shortcut icon (`default: false`). Hiding removes the `sidebar.panellist` icon immediately while keeping **Settings → Epic free games** always accessible.
