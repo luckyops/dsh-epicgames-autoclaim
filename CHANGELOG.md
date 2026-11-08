@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.0 — 2026-11-08
+
+- **Hide in sidebar option (`hideSidebar`)**: Added an instant toggle switch inside **Settings → Epic free games** (and in **Settings → Plugins** config) to hide or show the left-sidebar shortcut icon (`default: false`). Hiding removes the `sidebar.panellist` icon immediately while keeping **Settings → Epic free games** always accessible.
+- **Refined in-app descriptions**: Updated `locale/zh.json`, `locale/en.json`, and the page header introductions for multi-account clarity.
+
 ## 1.5.0 — 2026-11-08
 
 SOLID & GoF architecture pass, multi-account login hardening, and autonomous

@@ -51,6 +51,15 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
     <div class="ega_meta"><span>Last check <span class="ega_metaValue">2026/11/8 19:40:12</span></span>
       <span class="ega_sep">·</span><span>Next check <span class="ega_metaValue">2026/11/9 07:40:12</span></span>
       <span class="ega_sep">·</span><span>Interval <span class="ega_metaValue">12h</span></span></div>
+    <div class="ega_prefRow">
+      <div class="ega_prefMain">
+        <span class="ega_prefTitle">Hide icon in left sidebar</span>
+        <span class="ega_prefHint">Hides the left-rail shortcut icon while keeping this page in Settings → Epic free games</span>
+      </div>
+      <button type="button" role="switch" aria-checked="true" class="ega_switch ega_switchOn">
+        <span class="ega_switchThumb"></span>
+      </button>
+    </div>
     <p class="ega_warn">Human verification needed: solve it in the browser window; the plugin continues automatically — long warning line to stress wrapping behaviour.</p>
   </div>
   <div class="ega_grid">

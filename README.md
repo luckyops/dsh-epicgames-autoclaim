@@ -52,6 +52,7 @@
 | `claimHeadless` | `false` | 是否隐藏领取浏览器窗口，保持 `false` 可显著降低反机器人拦截率 |
 | `executablePath` | 空字符串 | Chromium 浏览器可执行文件绝对路径，留空自动检测系统 Chrome 或 Edge |
 | `runOnStartup` | `true` | DeepSeek Harness 启动 90 秒后自动执行一次检查 |
+| `hideSidebar` | `false` | 隐藏左侧栏快捷图标（也可直接在 **设置 → Epic 免费游戏** 页面内切换，设置页入口始终保留） |
 | `extraOrderSelectors` | `[]` | 自定义结算按钮选择器列表，优先于内置的 10 语言选择器匹配 |
 
 ## 故障排查
@@ -103,6 +104,7 @@ Adjust settings in **Settings → Plugins → Epic weekly free games**:
 | `claimHeadless` | `false` | Run checkout headless; keep `false` to pass bot checks reliably |
 | `executablePath` | Empty string | Full path to a Chromium executable; empty detects Chrome or Edge |
 | `runOnStartup` | `true` | Run one check 90s after the Host starts |
+| `hideSidebar` | `false` | Hide the left-sidebar icon (also toggleable directly inside **Settings → Epic free games**, which always stays visible) |
 | `extraOrderSelectors` | `[]` | Custom Playwright or CSS selectors checked before the built-in 10-language CTA list |
 
 ### Troubleshoot common issues

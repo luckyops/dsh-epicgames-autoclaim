@@ -423,6 +423,37 @@ describe('multi-account claiming, privacy masking, and projections', () => {
     );
     expect(statusCode).toBe(400);
     expect(body).toEqual({ error: 'bad-request' });
+
+    // Default hideSidebar is false; hide and show routes toggle it cleanly
+    expect(controller.status().hideSidebar).toBe(false);
+    const hideRoute = routes.find(r => r.kind === 'exact' && r.path.endsWith('/sidebar/hide'));
+    const showRoute = routes.find(r => r.kind === 'exact' && r.path.endsWith('/sidebar/show'));
+    expect(hideRoute).toBeDefined();
+    expect(showRoute).toBeDefined();
+
+    hideRoute.handler(
+      {
+        method: 'POST',
+        url: '/epicgames-autoclaim/api/sidebar/hide',
+        headers: { 'x-ega-plugin': '1', host: '127.0.0.1:49320' },
+      },
+      res,
+    );
+    expect(statusCode).toBe(200);
+    expect(body).toEqual({ ok: true, hideSidebar: true });
+    expect(controller.status().hideSidebar).toBe(true);
+
+    showRoute.handler(
+      {
+        method: 'POST',
+        url: '/epicgames-autoclaim/api/sidebar/show',
+        headers: { 'x-ega-plugin': '1', host: '127.0.0.1:49320' },
+      },
+      res,
+    );
+    expect(statusCode).toBe(200);
+    expect(body).toEqual({ ok: true, hideSidebar: false });
+    expect(controller.status().hideSidebar).toBe(false);
   });
 });
 

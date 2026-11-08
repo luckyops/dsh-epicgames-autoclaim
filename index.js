@@ -64,8 +64,14 @@ export const Config = Schema.object({
   runOnStartup: Schema.boolean()
     .default(true)
     .i18n({
-      en: 'Run one check shortly after the Host starts.',
-      zh: 'Host 启动后不久先检查一次。',
+      en: 'Run one check 90s after the Host starts.',
+      zh: 'Host 启动 90 秒后自动执行一次检查。',
+    }),
+  hideSidebar: Schema.boolean()
+    .default(false)
+    .i18n({
+      en: 'Hide the shortcut icon in the left sidebar. The plugin page remains available in Settings → Epic free games.',
+      zh: '在左侧边栏隐藏快捷图标（隐藏后仍可在“设置 → Epic 免费游戏”中打开）。',
     }),
   extraOrderSelectors: Schema.array(Schema.string())
     .default([])

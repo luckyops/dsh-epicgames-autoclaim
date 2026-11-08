@@ -21,7 +21,7 @@ window.__ModuleLoader__.load({
       zh: {
         nav: 'Epic 免费游戏',
         title: 'Epic 每周免费游戏',
-        intro: '登录一次 Epic 账号后，插件会自动发现并领取每周免费游戏。领取完全在系统 Chrome 中进行，插件不接触你的密码。',
+        intro: '在系统 Chrome 窗口中登录 Epic 账号（支持多账号独立会话），插件随后按计划自动发现每周免费游戏、核对库内所有权并完成 $0 入库，全程不接触密码。',
         signInOk: '已登录',
         signInNo: '未登录',
         signInUnknown: '会话待验证',
@@ -59,6 +59,8 @@ window.__ModuleLoader__.load({
         accountLabel: '账号',
         never: '从未',
         errorLabel: '最近错误',
+        hideSidebarLabel: '在左侧边栏隐藏图标',
+        hideSidebarHint: '开启后隐藏左侧栏快捷图标，此页面仍可在“设置 → Epic 免费游戏”中打开',
         transportHint: '当前页面无法直连插件服务，请在聊天输入框使用命令：/epicgames login、/epicgames check、/epicgames status。',
         settingsHint: '检查间隔、国家/语言等参数可在 设置 → 插件 中配置。',
         'login.opening': '正在打开 Epic 登录窗口…',
@@ -86,7 +88,7 @@ window.__ModuleLoader__.load({
       en: {
         nav: 'Epic free games',
         title: 'Epic weekly free games',
-        intro: 'Sign in to Epic once; the plugin then discovers and claims the weekly free games automatically. Claims run in system Chrome — the plugin never sees your password.',
+        intro: 'Sign in to one or more Epic accounts in system Chrome. The plugin then discovers weekly free games on a schedule, verifies library entitlements, and completes the $0 checkout without touching your password.',
         signInOk: 'Signed in',
         signInNo: 'Not signed in',
         signInUnknown: 'Session unverified',
@@ -124,6 +126,8 @@ window.__ModuleLoader__.load({
         accountLabel: 'Account',
         never: 'never',
         errorLabel: 'Last error',
+        hideSidebarLabel: 'Hide icon in left sidebar',
+        hideSidebarHint: 'Hides the left-rail shortcut icon while keeping this page in Settings → Epic free games',
         transportHint: 'This page cannot reach the plugin service here; use the chat commands instead: /epicgames login, /epicgames check, /epicgames status.',
         settingsHint: 'Interval, country, and locale are configurable in Settings → Plugins.',
         'login.opening': 'Opening the Epic sign-in window…',
@@ -208,6 +212,16 @@ window.__ModuleLoader__.load({
 .ega_buttonSm{height:26px;padding:0 10px;font-size:12px;margin-left:auto}
 .ega_primary{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-label-primary);font-weight:500}
 .ega_primary:hover:not(:disabled){background:var(--dsw-alias-bg-overlay)}
+.ega_prefRow{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--dsw-alias-border-l1);padding-top:10px;min-width:0}
+.ega_prefMain{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ega_prefTitle{font-size:13px;font-weight:500;line-height:18px;color:var(--dsw-alias-label-primary)}
+.ega_prefHint{font-size:12px;line-height:16px;color:var(--dsw-alias-label-secondary)}
+.ega_switch{position:relative;width:36px;height:20px;border-radius:999px;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2);padding:0;cursor:pointer;flex:none;transition:background .15s,border-color .15s}
+.ega_switchOn{background:var(--dsw-alias-brand-primary);border-color:var(--dsw-alias-brand-primary)}
+.ega_switch:disabled{opacity:.5;cursor:default}
+.ega_switch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
+.ega_switchThumb{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--dsw-alias-label-primary);transition:transform .15s}
+.ega_switchOn .ega_switchThumb{transform:translateX(16px);background:var(--dsw-alias-bg-layer-1)}
 `;
 
     function formatTime(value, t) {
@@ -242,7 +256,18 @@ window.__ModuleLoader__.load({
       }, (title ?? '?').slice(0, 1).toUpperCase());
     }
 
-    function StatusCard({ t, status, transportOk, busy, onLogin, onCheck, onRecheck, onLogout }) {
+    function StatusCard({
+      t,
+      status,
+      transportOk,
+      busy,
+      hideSidebar,
+      onLogin,
+      onCheck,
+      onRecheck,
+      onLogout,
+      onToggleSidebar,
+    }) {
       const accounts = status?.accounts ?? [];
       const signedIn = status?.signedIn === true;
       const phase = status?.phase ?? '';
@@ -318,16 +343,40 @@ window.__ModuleLoader__.load({
           meta(t('nextCheck'), formatTime(status?.nextRunAt, t), 'next'),
           h('span', { className: 'ega_sep', 'aria-hidden': true }, '·'),
           meta(t('interval'), `${status?.intervalHours ?? '—'}h`, 'interval')),
+        h('div', { className: 'ega_prefRow' },
+          h('div', { className: 'ega_prefMain' },
+            h('span', { className: 'ega_prefTitle' }, t('hideSidebarLabel')),
+            h('span', { className: 'ega_prefHint' }, t('hideSidebarHint'))),
+          h('button', {
+            type: 'button',
+            role: 'switch',
+            'aria-checked': Boolean(hideSidebar),
+            'aria-label': t('hideSidebarLabel'),
+            className: `ega_switch${hideSidebar ? ' ega_switchOn' : ''}`,
+            disabled: busy,
+            onClick: () => {
+              onToggleSidebar?.(!hideSidebar);
+            },
+          }, h('span', { className: 'ega_switchThumb', 'aria-hidden': true }))),
         status?.lastError
           ? h('p', { className: 'ega_warn' }, `${t('errorLabel')}: ${status.lastError}`)
           : null,
         transportOk ? null : h('p', { className: 'ega_warn' }, t('transportHint')));
     }
 
-    function Page({ t, variant }) {
+    function Page({ t, variant, sidebar }) {
       const [status, setStatus] = React.useState(null);
       const [transportOk, setTransportOk] = React.useState(true);
       const [busy, setBusy] = React.useState(false);
+      const [hideSidebar, setHideSidebar] = React.useState(() => Boolean(sidebar?.getHidden?.()));
+
+      React.useEffect(() => {
+        if (!sidebar?.subscribe) return undefined;
+        setHideSidebar(Boolean(sidebar.getHidden()));
+        return sidebar.subscribe(next => {
+          setHideSidebar(Boolean(next));
+        });
+      }, [sidebar]);
 
       const statusRef = React.useRef(null);
       statusRef.current = status;
@@ -338,14 +387,18 @@ window.__ModuleLoader__.load({
             headers: { accept: 'application/json', 'x-ega-plugin': '1' },
           });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          setStatus(await response.json());
+          const data = await response.json();
+          setStatus(data);
+          if (typeof data?.hideSidebar === 'boolean') {
+            sidebar?.setHidden?.(data.hideSidebar);
+          }
           setTransportOk(true);
           return true;
         } catch {
           setTransportOk(false);
           return false;
         }
-      }, []);
+      }, [sidebar]);
 
       React.useEffect(() => {
         let stopped = false;
@@ -409,6 +462,7 @@ window.__ModuleLoader__.load({
           status,
           transportOk,
           busy,
+          hideSidebar,
           onLogin: () => {
             void post('/epicgames-autoclaim/api/login');
           },
@@ -420,6 +474,10 @@ window.__ModuleLoader__.load({
           },
           onLogout: key => {
             void post(`/epicgames-autoclaim/api/logout/${encodeURIComponent(key)}`);
+          },
+          onToggleSidebar: nextHidden => {
+            sidebar?.setHidden?.(nextHidden, { closePanelIfActive: variant === 'panel' });
+            void post(nextHidden ? '/epicgames-autoclaim/api/sidebar/hide' : '/epicgames-autoclaim/api/sidebar/show');
           },
         }),
         h('div', { className: 'ega_grid' },
@@ -502,11 +560,95 @@ window.__ModuleLoader__.load({
       }));
     }
 
+    const SIDEBAR_STORAGE_KEY = 'dsh-epicgames-autoclaim:hideSidebar';
+
     return {
       inject: ['slots', 'locale'],
       apply(ctx) {
         ctx.effect(() => ctx.locale.register(NS, dictionaries), 'epicgames-autoclaim: locale');
         const t = ctx.locale.bind(NS);
+
+        let sidebarHidden = false;
+        try {
+          sidebarHidden = window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === '1';
+        } catch {
+          sidebarHidden = false;
+        }
+
+        let disposeSidebarSlot = null;
+        const subscribers = new Set();
+
+        const syncSidebarSlot = () => {
+          if (sidebarHidden) {
+            if (disposeSidebarSlot) {
+              const dispose = disposeSidebarSlot;
+              disposeSidebarSlot = null;
+              dispose();
+            }
+          } else if (!disposeSidebarSlot) {
+            disposeSidebarSlot = ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
+              name: 'sidebar.panellist',
+              id: 'epicgames',
+              order: 10,
+              label: () => t('panel'),
+              locale: NS,
+            }, PanelIcon));
+          }
+        };
+
+        const sidebar = {
+          getHidden: () => sidebarHidden,
+          subscribe(listener) {
+            subscribers.add(listener);
+            return () => {
+              subscribers.delete(listener);
+            };
+          },
+          setHidden(nextHidden, { closePanelIfActive = false } = {}) {
+            const normalized = Boolean(nextHidden);
+            try {
+              window.localStorage.setItem(SIDEBAR_STORAGE_KEY, normalized ? '1' : '0');
+            } catch {
+              // ignore storage failures
+            }
+            const changed = sidebarHidden !== normalized;
+            sidebarHidden = normalized;
+            syncSidebarSlot();
+            if (normalized && closePanelIfActive) {
+              try {
+                const layout = ctx.layout ?? ctx.get?.('layout');
+                layout?.selectPanel?.('conversation');
+              } catch {
+                // ignore if layout service is unavailable
+              }
+            }
+            if (changed) {
+              for (const listener of subscribers) listener(sidebarHidden);
+            }
+          },
+        };
+
+        syncSidebarSlot();
+        ctx.effect(() => () => {
+          if (disposeSidebarSlot) {
+            const dispose = disposeSidebarSlot;
+            disposeSidebarSlot = null;
+            dispose();
+          }
+        }, 'epicgames-autoclaim: sidebar slot');
+
+        // Hydrate sidebar visibility from Host state on startup so changes in
+        // Settings → Plugins or another window apply before opening Settings.
+        void fetch('/epicgames-autoclaim/api/status', {
+          headers: { accept: 'application/json', 'x-ega-plugin': '1' },
+        })
+          .then(res => (res.ok ? res.json() : null))
+          .then(data => {
+            if (typeof data?.hideSidebar === 'boolean') {
+              sidebar.setHidden(data.hideSidebar);
+            }
+          })
+          .catch(() => {});
 
         // Central panel behind the left-rail entry (the shell's layout
         // service selects it when the icon is clicked).
@@ -514,25 +656,16 @@ window.__ModuleLoader__.load({
           name: 'main',
           key: 'epicgames',
           locale: NS,
-          inject: () => ({ t, variant: 'panel' }),
+          inject: () => ({ t, variant: 'panel', sidebar }),
         }, Page));
 
-        // The left-sidebar entry itself.
-        ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
-          name: 'sidebar.panellist',
-          id: 'epicgames',
-          order: 10,
-          label: () => t('panel'),
-          locale: NS,
-        }, PanelIcon));
-
-        // Also reachable from Settings (narrow surface).
+        // Always reachable from Settings (narrow surface), even when hidden in the sidebar.
         ctx.slots.inject('settings.section', () => ctx.slots.register({
           name: 'settings.section',
           id: 'epicgames-autoclaim',
           order: 25,
           label: () => t('nav'),
-          inject: () => ({ t }),
+          inject: () => ({ t, sidebar }),
         }, Page));
       },
     };
