@@ -6,8 +6,29 @@
  * service provided by the host half, so every caller shares one implementation.
  */
 import Schema from '@deepseek-ai/schemastery';
+import { ACTION_NAMES, dispatchOperation } from './lib/operations.js';
 
 export const inject = ['tools'];
+
+export function executeToolCall(controller, args = {}) {
+  const action = args.action ?? 'status';
+  if (action === 'login') {
+    return withNote(dispatchOperation(controller, 'login'), 'login window opened; poll with action=status');
+  }
+  if (action === 'logout') {
+    const outcome = dispatchOperation(controller, 'logout', { target: args.target || 'all' });
+    return outcome.started
+      ? { ...outcome, note: `signed out ${outcome.count} account(s)` }
+      : { ...outcome, note: outcome.reason === 'busy' ? 'another operation is running' : 'unknown account' };
+  }
+  if (action === 'recheck') {
+    return withNote(dispatchOperation(controller, 'recheck'), 'full re-audit started; poll with action=status');
+  }
+  if (action === 'check') {
+    return withNote(dispatchOperation(controller, 'check'), 'background run started; poll with action=status');
+  }
+  return dispatchOperation(controller, 'status');
+}
 
 export function apply(ctx) {
   ctx.inject(['epicGames'], scope => {
@@ -24,29 +45,14 @@ export function apply(ctx) {
         + 'account name, or "all"). `recheck` re-audits every free game for every account.',
       parameters: Schema.object({
         action: Schema.string()
-          .enum(['status', 'check', 'recheck', 'login', 'logout'])
+          .enum([...ACTION_NAMES])
           .default('status')
           .description('Operation to run: status | check | recheck | login | logout.'),
         target: Schema.string()
           .description('For logout: the account name, its profile key, or "all" (default).'),
       }),
       async execute(args) {
-        if (args.action === 'login') {
-          return withNote(controller.startLogin(), 'login window opened; poll with action=status');
-        }
-        if (args.action === 'logout') {
-          const outcome = controller.logout(args.target || 'all');
-          return outcome.started
-            ? { ...outcome, note: `signed out ${outcome.count} account(s)` }
-            : { ...outcome, note: outcome.reason === 'busy' ? 'another operation is running' : 'unknown account' };
-        }
-        if (args.action === 'recheck') {
-          return withNote(controller.recheck(), 'full re-audit started; poll with action=status');
-        }
-        if (args.action === 'check') {
-          return withNote(controller.runCheck(true), 'background run started; poll with action=status');
-        }
-        return controller.status();
+        return executeToolCall(controller, args);
       },
     }), 'epicgames-autoclaim: agent tool');
   });

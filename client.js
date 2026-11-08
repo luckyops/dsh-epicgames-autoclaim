@@ -40,7 +40,7 @@ window.__ModuleLoader__.load({
         running: '运行中',
         phaseDiscovery: '正在发现免费游戏…',
         phaseClaiming: '正在领取…',
-        phaseNeedLogin: '需要登录：点击“登录 Epic”打开登录窗口',
+        phaseNeedLogin: '需要登录：点击“添加账号 / 登录”打开登录窗口',
         currentTitle: '本周免费',
         currentEmpty: '当前没有发现免费游戏',
         until: '截止',
@@ -52,6 +52,7 @@ window.__ModuleLoader__.load({
         outcomeError: '出错',
         outcomeSkipped: '跳过',
         logTitle: '动态',
+        logEmpty: '暂无动态记录',
         lastCheck: '上次检查',
         nextCheck: '下次检查',
         interval: '检查间隔',
@@ -104,7 +105,7 @@ window.__ModuleLoader__.load({
         running: 'running',
         phaseDiscovery: 'Discovering free games…',
         phaseClaiming: 'Claiming…',
-        phaseNeedLogin: 'Sign-in required: click "Sign in to Epic" to open the login window',
+        phaseNeedLogin: 'Sign-in required: click "Add account / Sign in" to open the login window',
         currentTitle: 'Free this week',
         currentEmpty: 'No free games found right now',
         until: 'until',
@@ -116,6 +117,7 @@ window.__ModuleLoader__.load({
         outcomeError: 'error',
         outcomeSkipped: 'skipped',
         logTitle: 'Activity',
+        logEmpty: 'No activity yet',
         lastCheck: 'Last check',
         nextCheck: 'Next check',
         interval: 'Interval',
@@ -221,8 +223,12 @@ window.__ModuleLoader__.load({
       return template.replace(/\{(\w+)\}/g, (_, key) => String(entry.params?.[key] ?? ''));
     }
 
+    function safeExternalUrl(url) {
+      return typeof url === 'string' && /^https?:\/\//i.test(url) ? url : '#';
+    }
+
     function Cover({ image, title, small }) {
-      if (image) {
+      if (typeof image === 'string' && image.startsWith('https://')) {
         return h('img', {
           src: image,
           alt: '',
@@ -263,16 +269,19 @@ window.__ModuleLoader__.load({
             stateText),
           h('span', { className: 'ega_actions' },
             h('button', {
+              type: 'button',
               className: 'ega_button ega_primary',
               disabled: busy || status?.running || !transportOk,
               onClick: onLogin,
             }, t('loginBtn')),
             h('button', {
+              type: 'button',
               className: 'ega_button',
               disabled: busy || status?.running || !transportOk,
               onClick: onCheck,
             }, status?.running ? `${t('checkBtn')} · ${t('running')}` : t('checkBtn')),
             h('button', {
+              type: 'button',
               className: 'ega_button',
               disabled: busy || status?.running || !transportOk,
               title: t('recheckHint'),
@@ -296,6 +305,7 @@ window.__ModuleLoader__.load({
                   `${account.id ? `${account.id} · ` : ''}${
                     t('accountClaims').replace('{n}', String(account.claimedCount ?? 0))}`)),
               h('button', {
+                type: 'button',
                 className: 'ega_button ega_buttonSm',
                 disabled: busy || status?.running || !transportOk,
                 onClick: () => {
@@ -387,7 +397,6 @@ window.__ModuleLoader__.load({
 
       const current = status?.current ?? [];
       const claimed = status?.claimed ?? [];
-      const accounts = status?.accounts ?? [];
       const log = (status?.log ?? []).slice(0, 8);
 
       return h('div', { className: `ega_page${variant === 'panel' ? ' ega_wide' : ''}` },
@@ -429,7 +438,7 @@ window.__ModuleLoader__.load({
                   h('div', { className: 'ega_gameBody' },
                     h('a', {
                       className: 'ega_gameTitle',
-                      href: game.url ?? '#',
+                      href: safeExternalUrl(game.url),
                       target: '_blank',
                       rel: 'noreferrer noopener',
                       title: game.title,
@@ -463,13 +472,15 @@ window.__ModuleLoader__.load({
                           : entry.outcome === 'error' ? t('outcomeError') : t('outcomeSkipped'))))))),
         h('div', { className: 'ega_card' },
           h('h3', { className: 'ega_cardTitle' }, t('logTitle')),
-          h('ul', { className: 'ega_log' },
-            log.map((entry, index) => h('li', {
-              key: `${entry.at}-${index}`,
-              className: entry.level === 'error' ? 'ega_bad' : entry.level === 'warn' ? 'ega_warn' : null,
-            },
-              h('span', { className: 'ega_logTime' }, formatTime(entry.at, t)),
-              renderEvent(t, entry)))))),
+          log.length === 0
+            ? h('p', { className: 'ega_empty' }, t('logEmpty'))
+            : h('ul', { className: 'ega_log' },
+              log.map((entry, index) => h('li', {
+                key: `${entry.at}-${index}`,
+                className: entry.level === 'error' ? 'ega_bad' : entry.level === 'warn' ? 'ega_warn' : null,
+              },
+                h('span', { className: 'ega_logTime' }, formatTime(entry.at, t)),
+                renderEvent(t, entry)))))),
         h('p', { className: 'ega_foot' }, t('settingsHint')));
     }
 

@@ -1,5 +1,63 @@
 # Changelog
 
+## 1.5.0 — 2026-11-08
+
+SOLID & GoF architecture pass, multi-account login hardening, and autonomous
+agent setup playbook (see `ARCHITECTURE-REVIEW.md` for the full audit).
+
+### Fixed
+
+- **Agent tool `logout` crash**: `index.js` now exposes the complete
+  `epicGames` service facade via `lib/operations.js` (`Command` pattern) so
+  `epicgames_free_games` with `action: "logout"` works alongside `status`,
+  `login`, `check`, and `recheck`.
+- **Multi-account login isolation & deduplication**:
+  - `runLoginFlow` always wipes any leftover `browser-profile-login` scratch
+    profile before opening the sign-in window, preventing stale cookies from an
+    aborted sign-in from polluting or auto-completing the next account's login.
+  - After SSO sign-in, the login flow visits the store and polls up to 15s for
+    the `EPIC_EG1` cookie so `accountId` and `displayName` are reliably minted.
+  - Re-signing into an already registered account (including accounts migrated
+    under `legacy` or created before `EPIC_EG1` minted) reuses its existing
+    profile key instead of creating a duplicate account entry.
+  - Closing the login window on macOS (where closing the window closes the page
+    while the background Chrome process stays alive) is detected immediately
+    instead of waiting 10 minutes, and never clobbers `sessionOk` on existing
+    signed-in accounts.
+  - Failed profile adoption (`adoptProfile` returning `false`) now reports
+    `adopt-failed` instead of a false-positive success (`adopted || true`).
+- **Privacy & per-account claim scoping**:
+  - `runClaimRun` refreshes account identity from cookies before recording
+    claims, and `state.recentClaimedView()` masks raw account IDs so full
+    32-character Epic IDs never leak in `/api/status` or UI tags.
+  - `hasClaimed` scopes unminted accounts strictly to their own profile key so
+    one account's claim never wildcard-blocks other accounts.
+- **Offer resolution & checkout safety**:
+  - `resolveOffer` now runs as a three-link Chain of Responsibility
+    (`StorePageMapping` → localized CMS content → direct `candidate` offer
+    identifiers) so a 404 on the legacy CMS no longer aborts resolution.
+  - `queryOfferFree` enforces a 60-second safety margin before `expiryDate` so
+    checkout never races the moment a free promotion reverts to paid price.
+  - `shouldCheckAgreement` no longer false-positives on EULA labels containing
+    the word `"offer"`, and explicitly blocks publisher email-sharing opt-ins;
+    checkbox label lookup uses `HTMLInputElement.labels` and `CSS.escape`.
+- **Security & resilience**:
+  - `allowRequest` validates exact IPv4 loopback (`127.0.0.0/8`) instead of a
+    `127.` prefix match that `127.evil.com` could bypass, and malformed percent
+    encoding on `/api/logout/*` returns `400` instead of throwing `URIError`.
+  - Added a retry circuit breaker (`scheduler.js`) that stops short-interval
+    retries when sessions are expired (`auth`), API fingerprints are stale
+    (`fingerprint`), or bot challenges fail 3 times in a row (`challenge`).
+
+### Added
+
+- `lib/state-store.js` (v4 Repository with corrupt-file `.bak` preservation and
+  `createMemoryStore` test adapter), `lib/operations.js` (Command registry),
+  `lib/storage.js` (directory hardening & legacy migrations), and
+  `extraOrderSelectors` config option (plus built-in 10-language CTA selectors).
+- Autonomous DeepSeek Harness installation & setup playbook in `README.md`
+  (English & Chinese).
+
 ## 1.4.0 — 2026-11-08
 
 Multi-account support; the project is renamed to

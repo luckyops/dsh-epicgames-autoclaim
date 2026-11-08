@@ -1,7 +1,8 @@
 {
   "name": "dsh-epicgames-autoclaim",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Automatically claims Epic Games Store weekly free games after a one-time browser sign-in.",
+  "private": false,
   "type": "module",
   "exports": {
     ".": "./index.js",
@@ -25,7 +26,7 @@
   ],
   "scripts": {
     "test": "vitest run",
-    "check": "node --check index.js && node --check client.js && node --check tool.js",
+    "check": "node --check index.js && node --check client.js && node --check tool.js && for f in lib/*.js; do node --check \"$f\"; done",
     "check:overflow": "node test/overflow.check.mjs"
   },
   "engines": {
@@ -43,7 +44,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/luckybear/dsh-epicgames-autoclaim"
+    "url": "git+https://github.com/luckyops/dsh-epicgames-autoclaim.git"
+  },
+  "homepage": "https://github.com/luckyops/dsh-epicgames-autoclaim#readme",
+  "bugs": {
+    "url": "https://github.com/luckyops/dsh-epicgames-autoclaim/issues"
   },
   "keywords": [
     "deepseek-harness",
