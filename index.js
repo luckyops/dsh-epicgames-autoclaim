@@ -19,33 +19,55 @@ import { createBrowserManager } from './lib/browser.js';
 import { createController } from './lib/controller.js';
 import { registerHttpApi } from './lib/http-api.js';
 import { registerCommand } from './lib/command.js';
+import { createUserLocale } from './lib/i18n.js';
 
 export const Config = Schema.object({
   intervalHours: Schema.number()
     .role('slide')
     .min(1).max(168).step(1).default(12)
-    .description('Hours between automatic checks (the giveaway rotation is weekly). 两次自动检查的间隔小时数。'),
+    .i18n({
+      en: 'Hours between automatic checks (the giveaway rotation is weekly).',
+      zh: '两次自动检查的间隔小时数（周免每周轮换）。',
+    }),
   country: Schema.string()
     .pattern(/^[A-Za-z]{2}$/)
     .default('US')
-    .description('Store country code for discovery, e.g. US, CN, DE. 发现用的商店国家代码。'),
+    .i18n({
+      en: 'Store country code for discovery, e.g. US, CN, DE.',
+      zh: '发现免费游戏用的商店国家代码，如 US、CN、DE。',
+    }),
   locale: Schema.string()
     .pattern(/^[A-Za-z]{2}-[A-Za-z]{2,4}$/)
     .default('en-US')
-    .description('Store locale for discovery and claim pages, e.g. en-US, zh-CN. 商店与领取页面语言。'),
+    .i18n({
+      en: 'Store locale for discovery and claim pages, e.g. en-US, zh-CN.',
+      zh: '商店与领取页面语言，如 en-US、zh-CN。',
+    }),
   loginLang: Schema.string()
     .pattern(/^([A-Za-z]{2}(-[A-Za-z]{2,4})?)?$/)
     .default('')
-    .description('Login window language (the human verification follows it); empty follows `locale`. 登录窗口语言，留空跟随商店语言。'),
+    .i18n({
+      en: 'Login window language (the human verification follows it); empty follows `locale`.',
+      zh: '登录窗口语言（人机验证跟随该语言）；留空跟随商店语言。',
+    }),
   claimHeadless: Schema.boolean()
     .default(false)
-    .description('Claim without a visible browser window; off (default) is most reliable against bot checks. 领取时是否隐藏浏览器窗口。'),
+    .i18n({
+      en: 'Claim without a visible browser window; off (default) is most reliable against bot checks.',
+      zh: '领取时是否隐藏浏览器窗口；关闭（默认）对反机器人检测最稳。',
+    }),
   executablePath: Schema.string()
     .default('')
-    .description('Optional full path to a Chromium-based browser executable; empty uses system Chrome. 可选浏览器路径。'),
+    .i18n({
+      en: 'Optional full path to a Chromium-based browser executable; empty uses system Chrome.',
+      zh: '可选的 Chromium 内核浏览器完整路径；留空使用系统 Chrome。',
+    }),
   runOnStartup: Schema.boolean()
     .default(true)
-    .description('Run one check shortly after the Host starts. Host 启动后不久先检查一次。'),
+    .i18n({
+      en: 'Run one check shortly after the Host starts.',
+      zh: 'Host 启动后不久先检查一次。',
+    }),
 });
 
 export function apply(ctx, config) {
@@ -108,7 +130,7 @@ export function apply(ctx, config) {
   });
 
   ctx.inject(['commands'], scope => {
-    registerCommand(scope, controller);
+    registerCommand(scope, controller, createUserLocale(ctx));
   });
 
   // Service consumed by the agent-plane entry (./tool) and any other plugin.

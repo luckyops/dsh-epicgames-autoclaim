@@ -3,8 +3,24 @@
 ## 1.4.0 — 2026-11-08
 
 Multi-account support; the project is renamed to **`dsh-epic-autoclaim`**
-(from `dsh-plugin-epicgames-auto`) and the installation documentation is
+(from `dsh-plugin-epicgames-auto`), every user-facing surface becomes
+language-switching bilingual, and the installation documentation is
 corrected.
+
+Localization:
+
+- **Config field descriptions** now use schemastery's `i18n` locale maps
+  (`{en, zh}`): the settings form renders them in the GUI's active language
+  instead of a fixed English+Chinese concatenation.
+- **`/epicgames` command replies switch by the user's language**: the Host
+  reads the language chosen in Settings → General → Language (stored in the
+  Host settings document) and replies in it; with no explicit choice the
+  replies stay bilingual one-liners so they read for any user. (The command
+  palette's description is a plain string by platform contract, so it keeps
+  the short bilingual form.)
+- The client page's zh/en dictionaries are audit-clean: key sets identical,
+  duplicate legacy `session.expired` keys removed (the per-account variant
+  wins), and every emitted activity code has a localized template.
 
 Rename and install docs:
 
