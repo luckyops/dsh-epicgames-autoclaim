@@ -1,4 +1,4 @@
 - insert:
-    - id: epicgames-auto
-      name: 'dsh-plugin-epicgames-auto'
+    - id: epic-autoclaim
+      name: 'dsh-epic-autoclaim'
       config: {}

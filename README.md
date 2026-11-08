@@ -1,4 +1,4 @@
-# dsh-plugin-epicgames-auto
+# dsh-epic-autoclaim
 
 **English** · [中文](#中文文档)
 
@@ -44,13 +44,19 @@ schedule: discovery, ownership checks, the $0 checkout, and bookkeeping.
 
 ## Install
 
-From a local checkout:
+**From a local checkout.** DeepSeek Harness has no shell command for plugin
+installs — `plugin_manager`'s `install_bundle` is a tool the assistant calls
+for you. Open any DSH session (this GUI works) and ask it to:
 
-```
-plugin_manager install_bundle /absolute/path/to/dsh-plugin-epicgames-auto
-```
+> Install the plugin bundle at /absolute/path/to/dsh-epic-autoclaim using
+> plugin_manager's `install_bundle`.
 
-Or install from a plugin-market index once the package is published there.
+The bundle installs into the current profile and loads without a restart
+when possible.
+
+**From a plugin market.** Once the package is published and listed by a
+plugin-market index, add that index in the GUI's plugin-market settings,
+search for `dsh-epic-autoclaim`, and install from there.
 
 ## Quick start
 
@@ -71,8 +77,8 @@ Or install from a plugin-market index once the package is published there.
 
 ```yaml
 # in your agent preset's plugin list (Settings → agent preset editor)
-- id: epicgames-auto-tool
-  name: dsh-plugin-epicgames-auto/tool
+- id: epic-autoclaim-tool
+  name: dsh-epic-autoclaim/tool
 ```
 
 ## Configuration (Settings → Plugins)
@@ -134,7 +140,7 @@ auto-expire after 7 days. Full inventory and the one-line purge command:
 
 # 中文文档
 
-**[English](#dsh-plugin-epicgames-auto)** · **中文**
+**[English](#dsh-epic-autoclaim)** · **中文**
 
 在 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 中**自动领取
 Epic 游戏商城每周免费游戏**——你只需在真实浏览器窗口中登录一次，剩下的全部交给
@@ -170,13 +176,16 @@ Epic 游戏商城每周免费游戏**——你只需在真实浏览器窗口中�
 
 ## 安装
 
-本地目录安装：
+**本地目录安装。** DeepSeek Harness 没有供终端使用的插件安装命令——
+`plugin_manager` 的 `install_bundle` 是由助手代为调用的工具。打开任意
+DSH 会话（本界面即可），对助手说：
 
-```
-plugin_manager install_bundle /绝对路径/dsh-plugin-epicgames-auto
-```
+> 用 plugin_manager 的 install_bundle 安装 /绝对路径/dsh-epic-autoclaim
 
-包发布到插件市场索引后，也可从市场一键安装。
+插件会安装进当前配置档（profile），多数情况下无需重启即可生效。
+
+**插件市场安装。** 包发布并被某个插件市场索引收录后，在 GUI 的插件
+市场设置中添加该索引，搜索 `dsh-epic-autoclaim` 安装。
 
 ## 快速上手
 
@@ -195,8 +204,8 @@ plugin_manager install_bundle /绝对路径/dsh-plugin-epicgames-auto
 
 ```yaml
 # 加入 agent 预设的插件列表（设置 → 预设编辑器）
-- id: epicgames-auto-tool
-  name: dsh-plugin-epicgames-auto/tool
+- id: epic-autoclaim-tool
+  name: dsh-epic-autoclaim/tool
 ```
 
 ## 配置项（设置 → 插件）

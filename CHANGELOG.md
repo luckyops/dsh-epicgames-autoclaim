@@ -1,5 +1,45 @@
 # Changelog
 
+## 1.4.0 — 2026-11-08
+
+Multi-account support; the project is renamed to **`dsh-epic-autoclaim`**
+(from `dsh-plugin-epicgames-auto`) and the installation documentation is
+corrected.
+
+Rename and install docs:
+
+- **Rename.** Package name, plugin row id, client entry id, settings-section
+  id, local HTTP route prefix (`/epic-autoclaim/api/*`), effect labels, and
+  the repository URL all follow the new name. The data directory moves from
+  `~/.dsh/data/epicgames-auto/` to `~/.dsh/data/epic-autoclaim/` — migrated
+  automatically on first start, so Epic sessions, claim history, and
+  screenshots survive; no re-login needed.
+- **Install docs corrected.** `plugin_manager install_bundle` is an assistant
+  tool action, not a shell command (DeepSeek Harness has no CLI for plugin
+  installs); the README now describes asking a DSH session to install a
+  local checkout, and the plugin-market flow for after publication.
+- Unchanged on purpose (domain names, not the project name): the `/epicgames`
+  slash commands, the `epicgames_free_games` agent tool, and the `epicGames`
+  service.
+
+Multi-account:
+
+- **Every registered Epic account claims its own library.** Each account has
+  its own persistent browser profile; a check discovers the free games once,
+  then claims account by account. Claim records stay per-account.
+- **Add accounts by signing in**: the login window opens a scratch profile,
+  so existing sessions are never disturbed; on success the profile is adopted
+  under the account's key and the account joins the registry. Signing in as a
+  known account refreshes it.
+- **Sign out per account** — an Accounts card lists name, masked id, claim
+  count, and session state with a Sign-out button (`/epicgames logout
+  [name|all]`, tool action `logout`). Signing out destroys that profile's
+  session cookies.
+- Claim history rows and activity events now carry the account; the status
+  document reports an `accounts` array (ids masked) under contract 3.
+- **Upgrade-safe**: a pre-1.4 single-account install migrates its shared
+  profile to a `legacy` account record, keeping the existing session.
+
 ## 1.3.0 — 2026-11-08
 
 Page redesign (both the sidebar panel and the settings entry):

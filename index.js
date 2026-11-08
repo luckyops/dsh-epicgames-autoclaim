@@ -50,7 +50,19 @@ export const Config = Schema.object({
 
 export function apply(ctx, config) {
   const home = process.env.DSH_HOME || path.join(os.homedir(), '.dsh');
-  const dataDir = path.join(home, 'data', 'epicgames-auto');
+  const dataDir = path.join(home, 'data', 'epic-autoclaim');
+  // One-time migration from the pre-rename data directory (<= 1.3.x, package
+  // dsh-plugin-epicgames-auto): move it into place so the Epic sessions,
+  // claim history, and diagnostic screenshots survive the rename.
+  const legacyDataDir = path.join(home, 'data', 'epicgames-auto');
+  if (!fs.existsSync(dataDir) && fs.existsSync(legacyDataDir)) {
+    try {
+      fs.renameSync(legacyDataDir, dataDir);
+    } catch {
+      // best-effort: on failure a fresh directory is created below and the
+      // legacy data simply stays behind (sign in again to re-establish)
+    }
+  }
   const errorsDir = path.join(dataDir, 'errors');
   // owner-only: the data directory holds the browser profile (session
   // cookies), the state file (account id, display name, game history), and
@@ -66,6 +78,28 @@ export function apply(ctx, config) {
 
   const state = createState(path.join(dataDir, 'state.json'));
   const browser = createBrowserManager({ dataDir, logger: ctx.logger });
+
+  // One-time upgrade of a pre-multi-account install: the old shared profile
+  // becomes the "legacy" account's own profile, so the existing Epic session
+  // survives the transition intact.
+  if (Object.keys(state.data.accounts).length === 0) {
+    const legacyDir = path.join(dataDir, 'browser-profile');
+    if (fs.existsSync(legacyDir)) {
+      try {
+        fs.renameSync(legacyDir, browser.dirOf('legacy'));
+      } catch {
+        // if the rename fails the legacy profile is simply re-adopted on login
+      }
+      state.upsertAccount({
+        key: 'legacy',
+        id: state.data.accountId ?? null,
+        name: state.data.accountName ?? null,
+        loggedInAt: state.data.loggedInAt,
+        sessionOk: state.data.sessionOk ?? null,
+      });
+    }
+  }
+
   const controller = createController({ ctx, config, state, browser, errorsDir });
 
   // ---- projections of the same operations ----------------------------------
