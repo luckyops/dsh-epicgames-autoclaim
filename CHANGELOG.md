@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1 — 2026-11-08
+
+- Fixed the primary button's unreadable contrast: brand color no longer fills
+  the button (white-on-brand broke in the active theme). The primary action
+  now uses the theme-guaranteed pair — `label-primary` text on `bg-layer-2` —
+  with the brand color as the border accent.
+
 ## 1.2.0 — 2026-11-08
 
 - Added a **left-sidebar panel** (gift-box icon beside Plugins) opening the

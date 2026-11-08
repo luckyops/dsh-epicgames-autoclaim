@@ -141,8 +141,8 @@ window.__ModuleLoader__.load({
 .ega_button{border:1px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-primary);border-radius:8px;height:32px;padding:0 14px;font:inherit;font-size:13px;cursor:pointer}
 .ega_button:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2)}
 .ega_button:disabled{opacity:.5;cursor:default}
-.ega_primary{background:var(--dsw-alias-brand-primary);border-color:transparent;color:#fff}
-.ega_primary:hover:not(:disabled){background:var(--dsw-alias-brand-primary);opacity:.9}
+.ega_primary{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-label-primary);font-weight:500}
+.ega_primary:hover:not(:disabled){background:var(--dsw-alias-bg-overlay)}
 .ega_list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .ega_item{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px;line-height:20px}
 .ega_itemTitle{color:var(--dsw-alias-label-primary);font-weight:500;text-decoration:none}
