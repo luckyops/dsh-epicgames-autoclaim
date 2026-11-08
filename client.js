@@ -166,9 +166,13 @@ window.__ModuleLoader__.load({
 .ega_dot{width:8px;height:8px;border-radius:50%;background:var(--dsw-alias-state-idle-primary);flex:none}
 .ega_dotOk{background:var(--dsw-alias-state-success-primary)}
 .ega_dotBad{background:var(--dsw-alias-state-error-primary)}
-.ega_account{font-size:13px;line-height:20px;color:var(--dsw-alias-label-secondary)}
 .ega_actions{margin-left:auto;display:inline-flex;gap:8px;flex-wrap:wrap}
-.ega_meta{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}
+.ega_accounts{display:flex;flex-direction:column;gap:6px}
+.ega_account{display:flex;align-items:center;gap:10px;min-height:30px}
+.ega_accountMain{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ega_accountName{font-size:13px;font-weight:500;line-height:18px;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ega_accountMeta{font-size:11px;line-height:14px;color:var(--dsw-alias-label-secondary)}
+.ega_meta{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary);border-top:1px solid var(--dsw-alias-border-l1);padding-top:10px}
 .ega_metaValue{color:var(--dsw-alias-label-primary)}
 .ega_sep{opacity:.45}
 .ega_warn{margin:0;font-size:12px;line-height:18px;white-space:pre-wrap;color:var(--dsw-alias-state-warn-primary)}
@@ -186,7 +190,8 @@ window.__ModuleLoader__.load({
 .ega_monogramSm{width:36px;height:36px;border-radius:8px;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none}
 .ega_claimBody{display:flex;flex-direction:column;gap:1px;min-width:0}
 .ega_claimTime{font-size:11px;line-height:14px;color:var(--dsw-alias-label-secondary)}
-.ega_tag{margin-left:auto;border:1px solid var(--dsw-alias-border-l2);border-radius:6px;padding:1px 6px;font-size:11px;line-height:16px;color:var(--dsw-alias-label-secondary);flex:none}
+.ega_tag{border:1px solid var(--dsw-alias-border-l2);border-radius:6px;padding:1px 6px;font-size:11px;line-height:16px;color:var(--dsw-alias-label-secondary);flex:none}
+.ega_tags{margin-left:auto;display:inline-flex;gap:6px;align-items:center;flex:none}
 .ega_tagClaimed{color:var(--dsw-alias-state-success-primary);border-color:var(--dsw-alias-state-success-primary)}
 .ega_tagFailed{color:var(--dsw-alias-state-error-primary);border-color:var(--dsw-alias-state-error-primary)}
 .ega_log{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}
@@ -197,6 +202,7 @@ window.__ModuleLoader__.load({
 .ega_button:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2)}
 .ega_button:disabled{opacity:.5;cursor:default}
 .ega_button:focus-visible,.ega_gameTitle:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px;border-radius:8px}
+.ega_buttonSm{height:26px;padding:0 10px;font-size:12px;margin-left:auto}
 .ega_primary{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-label-primary);font-weight:500}
 .ega_primary:hover:not(:disabled){background:var(--dsw-alias-bg-overlay)}
 `;
@@ -229,7 +235,7 @@ window.__ModuleLoader__.load({
       }, (title ?? '?').slice(0, 1).toUpperCase());
     }
 
-    function StatusCard({ t, status, transportOk, busy, onLogin, onCheck, onRecheck }) {
+    function StatusCard({ t, status, transportOk, busy, onLogin, onCheck, onRecheck, onLogout }) {
       const accounts = status?.accounts ?? [];
       const signedIn = status?.signedIn === true;
       const phase = status?.phase ?? '';
@@ -253,10 +259,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'ega_statusRow' },
           h('span', { className: 'ega_state' },
             h('span', { className: `ega_dot ${signedIn ? 'ega_dotOk' : 'ega_dotBad'}` }),
-            stateText,
-            accounts.length === 1 && accounts[0].name
-              ? h('span', { className: 'ega_account' }, accounts[0].name)
-              : null),
+            stateText),
           h('span', { className: 'ega_actions' },
             h('button', {
               className: 'ega_button ega_primary',
@@ -275,6 +278,29 @@ window.__ModuleLoader__.load({
               onClick: onRecheck,
             }, t('recheckBtn')))),
         phaseText ? h('p', { className: 'ega_warn' }, phaseText) : null,
+        accounts.length === 0
+          ? null
+          : h('div', { className: 'ega_accounts' },
+            accounts.map(account => h('div', {
+              key: account.key,
+              className: 'ega_account',
+            },
+              h('span', {
+                className: `ega_dot ${account.sessionOk === false ? 'ega_dotBad' : 'ega_dotOk'}`,
+                title: account.sessionOk === false ? t('accountSessionBad') : undefined,
+              }),
+              h('div', { className: 'ega_accountMain' },
+                h('span', { className: 'ega_accountName' }, account.name ?? account.id ?? account.key),
+                h('span', { className: 'ega_accountMeta' },
+                  `${account.id ? `${account.id} · ` : ''}${
+                    t('accountClaims').replace('{n}', String(account.claimedCount ?? 0))}`)),
+              h('button', {
+                className: 'ega_button ega_buttonSm',
+                disabled: busy || status?.running || !transportOk,
+                onClick: () => {
+                  onLogout?.(account.key);
+                },
+              }, t('logoutBtn'))))),
         h('div', { className: 'ega_meta' },
           meta(t('lastCheck'), formatTime(status?.lastCheckAt, t), 'last'),
           h('span', { className: 'ega_sep', 'aria-hidden': true }, '·'),
@@ -382,36 +408,10 @@ window.__ModuleLoader__.load({
           onRecheck: () => {
             void post('/epic-autoclaim/api/recheck');
           },
+          onLogout: key => {
+            void post(`/epic-autoclaim/api/logout/${encodeURIComponent(key)}`);
+          },
         }),
-        h('div', { className: 'ega_card' },
-          h('h3', { className: 'ega_cardTitle' },
-            t('accountsTitle'),
-            h('span', { className: 'ega_count' }, String(accounts.length))),
-          accounts.length === 0
-            ? h('p', { className: 'ega_empty' }, t('accountsEmpty'))
-            : h('ul', { className: 'ega_list' },
-              accounts.map(account => h('li', {
-                key: account.key,
-                className: 'ega_claim',
-              },
-                h('span', {
-                  className: `ega_dot ${account.sessionOk === false ? 'ega_dotBad' : 'ega_dotOk'}`,
-                  style: { width: 8, height: 8 },
-                  title: account.sessionOk === false ? t('accountSessionBad') : undefined,
-                }),
-                h('div', { className: 'ega_claimBody' },
-                  h('span', { className: 'ega_gameTitle' }, account.name ?? account.id ?? account.key),
-                  h('span', { className: 'ega_claimTime' },
-                    `${account.id ?? ''}${account.id ? ' · ' : ''}${
-                      t('accountClaims').replace('{n}', String(account.claimedCount ?? 0))}`)),
-                h('button', {
-                  className: 'ega_button',
-                  style: { height: 26, padding: '0 10px', fontSize: 12, marginLeft: 'auto' },
-                  disabled: busy || status?.running || !transportOk,
-                  onClick: () => {
-                    void post(`/epic-autoclaim/api/logout/${encodeURIComponent(account.key)}`);
-                  },
-                }, t('logoutBtn')))))),
         h('div', { className: 'ega_grid' },
           h('div', { className: 'ega_card' },
             h('h3', { className: 'ega_cardTitle' },
@@ -450,15 +450,16 @@ window.__ModuleLoader__.load({
                   h(Cover, { image: entry.image, title: entry.title, small: true }),
                   h('div', { className: 'ega_claimBody' },
                     h('span', { className: 'ega_gameTitle' }, entry.title),
-                    h('span', { className: 'ega_claimTime' },
-                      `${entry.account ?? ''}${entry.account ? ' · ' : ''}${formatTime(entry.claimedAt, t)}`)),
-                  h('span', {
-                    className: entry.outcome === 'claimed' ? 'ega_tag ega_tagClaimed'
-                      : (entry.outcome === 'failed' || entry.outcome === 'error') ? 'ega_tag ega_tagFailed' : 'ega_tag',
-                  }, entry.outcome === 'claimed' ? t('outcomeClaimed')
-                    : entry.outcome === 'already-owned' ? t('outcomeAlreadyOwned')
-                      : entry.outcome === 'failed' ? t('outcomeFailed')
-                        : entry.outcome === 'error' ? t('outcomeError') : t('outcomeSkipped')))))),
+                    h('span', { className: 'ega_claimTime' }, formatTime(entry.claimedAt, t))),
+                  h('span', { className: 'ega_tags' },
+                    entry.account ? h('span', { className: 'ega_tag' }, entry.account) : null,
+                    h('span', {
+                      className: entry.outcome === 'claimed' ? 'ega_tag ega_tagClaimed'
+                        : (entry.outcome === 'failed' || entry.outcome === 'error') ? 'ega_tag ega_tagFailed' : 'ega_tag',
+                    }, entry.outcome === 'claimed' ? t('outcomeClaimed')
+                      : entry.outcome === 'already-owned' ? t('outcomeAlreadyOwned')
+                        : entry.outcome === 'failed' ? t('outcomeFailed')
+                          : entry.outcome === 'error' ? t('outcomeError') : t('outcomeSkipped'))))))),
         h('div', { className: 'ega_card' },
           h('h3', { className: 'ega_cardTitle' }, t('logTitle')),
           h('ul', { className: 'ega_log' },
