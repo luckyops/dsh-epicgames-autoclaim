@@ -1,7 +1,7 @@
 {
   "name": "dsh-epicgames-autoclaim",
   "version": "1.5.0",
-  "description": "Automatically claims Epic Games Store weekly free games after a one-time browser sign-in.",
+  "description": "Multi-account Epic Games Store auto-claim: sign in once per account, zero-overhead scheduled discovery, and auto-checkout into your library.",
   "private": false,
   "type": "module",
   "exports": {
