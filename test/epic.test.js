@@ -62,6 +62,10 @@ describe('elementsToFreeGames', () => {
     namespace: 'ns-1',
     offerType: 'BASE_GAME',
     productSlug: 'game-a',
+    keyImages: [
+      { type: 'Thumbnail', url: 'https://cdn1.epicgames.com/t.jpg' },
+      { type: 'OfferImageWide', url: 'https://cdn1.epicgames.com/w.jpg' },
+    ],
     catalogNs: { mappings: [{ pageType: 'productHome', pageSlug: 'game-a-home' }] },
     promotions: {
       promotionalOffers: [{
@@ -88,6 +92,7 @@ describe('elementsToFreeGames', () => {
       pageSlug: 'game-a-home',
       offerId: 'offer-1',
       namespace: 'ns-1',
+      image: 'https://cdn1.epicgames.com/w.jpg',
       endsAt: '2026-11-12T16:00:00.000Z',
     });
   });

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.3.0 — 2026-11-08
+
+Page redesign (both the sidebar panel and the settings entry):
+
+- **Layout**: header → status strip (state, account, actions, and a
+  check-schedule meta row) → two-column grid (free this week · claim history)
+  that reflows by container width → full-width activity log. The wide panel
+  variant carries its own padding and a 1040px measure; the settings variant
+  stays at 680px.
+- **Game covers**: discovery now carries each game's wide key image (claim
+  records store it too); rows render a 16:9 cover or a letter monogram when
+  no image exists.
+- **Craft pass**: CSS-drawn status dot, focus-visible rings on buttons and
+  links, title-ellipsis with tooltip, proper empty states, 4pt spacing scale,
+  section counts next to card titles.
+
 ## 1.2.1 — 2026-11-08
 
 - Fixed the primary button's unreadable contrast: brand color no longer fills

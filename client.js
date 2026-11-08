@@ -1,13 +1,14 @@
 /**
  * Epic Games Store weekly free games — Client half.
  *
- * Registers one page in the Web GUI's Settings panel: sign-in state, the
- * current free games, claim history, and the sign-in / check / re-verify
- * actions. Actions call this package's Host half through its own HTTP route
- * on the same origin; when that transport is unavailable (for example a
- * Desktop file:// page), the page falls back to telling the user to run the
- * `/epicgames` slash command instead. Activity-log entries arrive as
- * `{code, params}` and render through the locale dictionaries.
+ * One page component renders in two surfaces: the left-sidebar panel (wide)
+ * and the Settings entry (narrow); a `variant` prop tunes width and padding,
+ * and the content grid reflows by itself. Actions call this package's Host
+ * half through its own HTTP route on the same origin; when that transport is
+ * unavailable (for example a Desktop file:// page), the page falls back to
+ * telling the user to run the `/epicgames` slash command instead. Activity
+ * entries arrive as `{code, params}` and render through the locale
+ * dictionaries.
  */
 window.__ModuleLoader__.load({
   id: 'dsh-plugin-epicgames-auto',
@@ -34,7 +35,7 @@ window.__ModuleLoader__.load({
         phaseDiscovery: '正在发现免费游戏…',
         phaseClaiming: '正在领取…',
         phaseNeedLogin: '需要登录：点击“登录 Epic”打开登录窗口',
-        currentTitle: '本周免费游戏',
+        currentTitle: '本周免费',
         currentEmpty: '当前没有发现免费游戏',
         until: '截止',
         claimedTitle: '领取历史',
@@ -47,6 +48,7 @@ window.__ModuleLoader__.load({
         logTitle: '动态',
         lastCheck: '上次检查',
         nextCheck: '下次检查',
+        interval: '检查间隔',
         accountLabel: '账号',
         never: '从未',
         errorLabel: '最近错误',
@@ -101,6 +103,7 @@ window.__ModuleLoader__.load({
         logTitle: 'Activity',
         lastCheck: 'Last check',
         nextCheck: 'Next check',
+        interval: 'Interval',
         accountLabel: 'Account',
         never: 'never',
         errorLabel: 'Last error',
@@ -127,38 +130,83 @@ window.__ModuleLoader__.load({
       },
     };
 
+    // 4pt scale: 4 / 8 / 12 / 16 / 20 / 24 / 32. Page rhythm: 16 between
+    // regions, 12 inside cards, 10 between list rows, 6 between log lines.
     const CSS = `
-.ega_section{max-width:720px;color:var(--dsw-alias-label-primary);display:flex;flex-direction:column;gap:12px}
-.ega_title{margin:0;font-size:16px;font-weight:500;line-height:24px;color:var(--dsw-alias-label-primary)}
-.ega_intro{margin:0;font-size:14px;line-height:22px;color:var(--dsw-alias-label-secondary)}
-.ega_card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
-.ega_cardTitle{margin:0;font-size:14px;font-weight:500;line-height:20px;color:var(--dsw-alias-label-primary)}
-.ega_row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;line-height:20px;color:var(--dsw-alias-label-secondary)}
-.ega_rowValue{color:var(--dsw-alias-label-primary)}
-.ega_ok{color:var(--dsw-alias-state-success-primary)}
+.ega_page{display:flex;flex-direction:column;gap:16px;max-width:680px;color:var(--dsw-alias-label-primary)}
+.ega_wide{max-width:1040px;padding:24px 28px 40px}
+.ega_title{margin:0;font-size:18px;font-weight:600;line-height:26px;letter-spacing:-0.01em}
+.ega_intro{margin:4px 0 0;font-size:13px;line-height:20px;color:var(--dsw-alias-label-secondary)}
+.ega_card{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ega_cardTitle{margin:0;font-size:13px;font-weight:600;line-height:18px;display:flex;align-items:baseline;gap:8px}
+.ega_count{font-size:12px;font-weight:400;color:var(--dsw-alias-label-secondary)}
+.ega_grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.ega_statusRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ega_state{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;line-height:20px}
+.ega_dot{width:8px;height:8px;border-radius:50%;background:var(--dsw-alias-state-idle-primary);flex:none}
+.ega_dotOk{background:var(--dsw-alias-state-success-primary)}
+.ega_dotBad{background:var(--dsw-alias-state-error-primary)}
+.ega_account{font-size:13px;line-height:20px;color:var(--dsw-alias-label-secondary)}
+.ega_actions{margin-left:auto;display:inline-flex;gap:8px;flex-wrap:wrap}
+.ega_meta{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}
+.ega_metaValue{color:var(--dsw-alias-label-primary)}
+.ega_sep{opacity:.45}
+.ega_warn{margin:0;font-size:12px;line-height:18px;white-space:pre-wrap;color:var(--dsw-alias-state-warn-primary)}
 .ega_bad{color:var(--dsw-alias-state-error-primary)}
-.ega_warn{color:var(--dsw-alias-state-warn-primary);margin:0;font-size:12px;line-height:18px;white-space:pre-wrap}
+.ega_list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.ega_game{display:flex;gap:12px;align-items:center}
+.ega_cover{width:88px;height:50px;border-radius:8px;object-fit:cover;background:var(--dsw-alias-bg-layer-2);flex:none;display:block}
+.ega_monogram{width:88px;height:50px;border-radius:8px;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex:none}
+.ega_gameBody{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ega_gameTitle{color:var(--dsw-alias-label-primary);font-size:13px;font-weight:500;line-height:18px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ega_gameTitle:hover{text-decoration:underline}
+.ega_gameMeta{font-size:12px;line-height:16px;color:var(--dsw-alias-label-secondary)}
+.ega_claim{display:flex;gap:10px;align-items:center;min-width:0}
+.ega_thumb{width:36px;height:36px;border-radius:8px;object-fit:cover;background:var(--dsw-alias-bg-layer-2);flex:none;display:block}
+.ega_monogramSm{width:36px;height:36px;border-radius:8px;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none}
+.ega_claimBody{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ega_claimTime{font-size:11px;line-height:14px;color:var(--dsw-alias-label-secondary)}
+.ega_tag{margin-left:auto;border:1px solid var(--dsw-alias-border-l2);border-radius:6px;padding:1px 6px;font-size:11px;line-height:16px;color:var(--dsw-alias-label-secondary);flex:none}
+.ega_tagClaimed{color:var(--dsw-alias-state-success-primary);border-color:var(--dsw-alias-state-success-primary)}
+.ega_tagFailed{color:var(--dsw-alias-state-error-primary);border-color:var(--dsw-alias-state-error-primary)}
+.ega_log{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}
+.ega_logTime{margin-right:6px;opacity:.7}
+.ega_empty{margin:0;padding:20px 4px;font-size:13px;line-height:20px;color:var(--dsw-alias-label-secondary)}
+.ega_foot{margin:0;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}
 .ega_button{border:1px solid var(--dsw-alias-border-l2);background:transparent;color:var(--dsw-alias-label-primary);border-radius:8px;height:32px;padding:0 14px;font:inherit;font-size:13px;cursor:pointer}
 .ega_button:hover:not(:disabled){background:var(--dsw-alias-bg-layer-2)}
 .ega_button:disabled{opacity:.5;cursor:default}
+.ega_button:focus-visible,.ega_gameTitle:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px;border-radius:8px}
 .ega_primary{background:var(--dsw-alias-bg-layer-2);border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-label-primary);font-weight:500}
 .ega_primary:hover:not(:disabled){background:var(--dsw-alias-bg-overlay)}
-.ega_list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.ega_item{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px;line-height:20px}
-.ega_itemTitle{color:var(--dsw-alias-label-primary);font-weight:500;text-decoration:none}
-.ega_itemTitle:hover{text-decoration:underline}
-.ega_itemMeta{color:var(--dsw-alias-label-secondary)}
-.ega_tag{border:1px solid var(--dsw-alias-border-l2);border-radius:6px;padding:0 6px;font-size:11px;line-height:16px;color:var(--dsw-alias-label-secondary)}
-.ega_tagClaimed{color:var(--dsw-alias-state-success-primary);border-color:var(--dsw-alias-state-success-primary)}
-.ega_tagFailed{color:var(--dsw-alias-state-error-primary);border-color:var(--dsw-alias-state-error-primary)}
-.ega_log{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary)}
-.ega_logTime{margin-right:6px;opacity:.7}
 `;
 
     function formatTime(value, t) {
       if (!value) return t('never');
       const date = new Date(value);
       return Number.isNaN(date.getTime()) ? t('never') : date.toLocaleString();
+    }
+
+    /** Localize a `{code, params}` activity entry; legacy raw text falls through. */
+    function renderEvent(t, entry) {
+      const template = entry.code ? t(entry.code) : null;
+      if (typeof template !== 'string' || template === entry.code) return entry.text ?? entry.code ?? '';
+      return template.replace(/\{(\w+)\}/g, (_, key) => String(entry.params?.[key] ?? ''));
+    }
+
+    function Cover({ image, title, small }) {
+      if (image) {
+        return h('img', {
+          src: image,
+          alt: '',
+          loading: 'lazy',
+          className: small ? 'ega_thumb' : 'ega_cover',
+        });
+      }
+      return h('span', {
+        className: small ? 'ega_monogramSm' : 'ega_monogram',
+        'aria-hidden': true,
+      }, (title ?? '?').slice(0, 1).toUpperCase());
     }
 
     function StatusCard({ t, status, transportOk, busy, onLogin, onCheck, onRecheck }) {
@@ -173,14 +221,19 @@ window.__ModuleLoader__.load({
             : phase === 'need-login'
               ? t('phaseNeedLogin')
               : null;
+      const meta = (label, value, key) => h('span', { key },
+        h('span', null, `${label} `),
+        h('span', { className: 'ega_metaValue' }, value));
+
       return h('div', { className: 'ega_card' },
-        h('div', { className: 'ega_row' },
-          h('span', null,
-            h('span', { className: signedIn ? 'ega_ok' : 'ega_bad' }, '● '),
-            h('span', { className: 'ega_rowValue' },
-              signedIn ? t('signInOk') : (status == null ? t('signInUnknown') : t('signInNo'))),
-            status?.accountName ? h('span', null, ` · ${t('accountLabel')}: ${status.accountName}`) : null),
-          h('span', { style: { marginLeft: 'auto', display: 'inline-flex', gap: 8 } },
+        h('div', { className: 'ega_statusRow' },
+          h('span', { className: 'ega_state' },
+            h('span', { className: `ega_dot ${signedIn ? 'ega_dotOk' : 'ega_dotBad'}` }),
+            signedIn ? t('signInOk') : (status == null ? t('signInUnknown') : t('signInNo'))),
+          status?.accountName
+            ? h('span', { className: 'ega_account' }, `${t('accountLabel')}: ${status.accountName}`)
+            : null,
+          h('span', { className: 'ega_actions' },
             h('button', {
               className: 'ega_button ega_primary',
               disabled: busy || status?.running || !transportOk,
@@ -198,19 +251,25 @@ window.__ModuleLoader__.load({
               onClick: onRecheck,
             }, t('recheckBtn')))),
         phaseText ? h('p', { className: 'ega_warn' }, phaseText) : null,
-        h('div', { className: 'ega_row' },
-          h('span', null, `${t('lastCheck')}: `, h('span', { className: 'ega_rowValue' }, formatTime(status?.lastCheckAt, t))),
-          h('span', null, `${t('nextCheck')}: `, h('span', { className: 'ega_rowValue' }, formatTime(status?.nextRunAt, t)))),
+        h('div', { className: 'ega_meta' },
+          meta(t('lastCheck'), formatTime(status?.lastCheckAt, t), 'last'),
+          h('span', { className: 'ega_sep', 'aria-hidden': true }, '·'),
+          meta(t('nextCheck'), formatTime(status?.nextRunAt, t), 'next'),
+          h('span', { className: 'ega_sep', 'aria-hidden': true }, '·'),
+          meta(t('interval'), `${status?.intervalHours ?? '—'}h`, 'interval')),
         status?.lastError
           ? h('p', { className: 'ega_warn' }, `${t('errorLabel')}: ${status.lastError}`)
           : null,
         transportOk ? null : h('p', { className: 'ega_warn' }, t('transportHint')));
     }
 
-    function Page({ t }) {
+    function Page({ t, variant }) {
       const [status, setStatus] = React.useState(null);
       const [transportOk, setTransportOk] = React.useState(true);
       const [busy, setBusy] = React.useState(false);
+
+      const statusRef = React.useRef(null);
+      statusRef.current = status;
 
       const fetchStatus = React.useCallback(async () => {
         try {
@@ -226,9 +285,6 @@ window.__ModuleLoader__.load({
           return false;
         }
       }, []);
-
-      const statusRef = React.useRef(null);
-      statusRef.current = status;
 
       React.useEffect(() => {
         let stopped = false;
@@ -282,10 +338,11 @@ window.__ModuleLoader__.load({
       const claimed = status?.claimed ?? [];
       const log = (status?.log ?? []).slice(0, 8);
 
-      return h('div', { className: 'ega_section' },
+      return h('div', { className: `ega_page${variant === 'panel' ? ' ega_wide' : ''}` },
         h('style', null, CSS),
-        h('h2', { className: 'ega_title' }, t('title')),
-        h('p', { className: 'ega_intro' }, t('intro')),
+        h('header', null,
+          h('h2', { className: 'ega_title' }, t('title')),
+          h('p', { className: 'ega_intro' }, t('intro'))),
         h(StatusCard, {
           t,
           status,
@@ -301,39 +358,52 @@ window.__ModuleLoader__.load({
             void post('/epicgames-auto/api/recheck');
           },
         }),
-        h('div', { className: 'ega_card' },
-          h('h3', { className: 'ega_cardTitle' }, t('currentTitle')),
-          current.length === 0
-            ? h('p', { className: 'ega_intro' }, t('currentEmpty'))
-            : h('ul', { className: 'ega_list' },
-              current.map(game => h('li', { key: game.pageSlug ?? game.title, className: 'ega_item' },
-                h('a', {
-                  className: 'ega_itemTitle',
-                  href: game.url ?? '#',
-                  target: '_blank',
-                  rel: 'noreferrer noopener',
-                }, game.title),
-                game.endsAt
-                  ? h('span', { className: 'ega_itemMeta' }, `${t('until')} ${formatTime(game.endsAt, t)}`)
-                  : null)))),
-        h('div', { className: 'ega_card' },
-          h('h3', { className: 'ega_cardTitle' }, t('claimedTitle')),
-          claimed.length === 0
-            ? h('p', { className: 'ega_intro' }, t('claimedEmpty'))
-            : h('ul', { className: 'ega_list' },
-              claimed.map((entry, index) => h('li', {
-                key: `${entry.claimedAt}-${entry.pageSlug}-${index}`,
-                className: 'ega_item',
-              },
-                h('span', { className: 'ega_itemTitle' }, entry.title),
-                h('span', {
-                  className: entry.outcome === 'claimed' ? 'ega_tag ega_tagClaimed'
-                    : (entry.outcome === 'failed' || entry.outcome === 'error') ? 'ega_tag ega_tagFailed' : 'ega_tag',
-                }, entry.outcome === 'claimed' ? t('outcomeClaimed')
-                  : entry.outcome === 'already-owned' ? t('outcomeAlreadyOwned')
-                    : entry.outcome === 'failed' ? t('outcomeFailed')
-                      : entry.outcome === 'error' ? t('outcomeError') : t('outcomeSkipped')),
-                h('span', { className: 'ega_itemMeta' }, formatTime(entry.claimedAt, t)))))),
+        h('div', { className: 'ega_grid' },
+          h('div', { className: 'ega_card' },
+            h('h3', { className: 'ega_cardTitle' },
+              t('currentTitle'),
+              h('span', { className: 'ega_count' }, String(current.length))),
+            current.length === 0
+              ? h('p', { className: 'ega_empty' }, t('currentEmpty'))
+              : h('ul', { className: 'ega_list' },
+                current.map(game => h('li', {
+                  key: game.pageSlug ?? game.title,
+                  className: 'ega_game',
+                },
+                  h(Cover, { image: game.image, title: game.title }),
+                  h('div', { className: 'ega_gameBody' },
+                    h('a', {
+                      className: 'ega_gameTitle',
+                      href: game.url ?? '#',
+                      target: '_blank',
+                      rel: 'noreferrer noopener',
+                      title: game.title,
+                    }, game.title),
+                    game.endsAt
+                      ? h('span', { className: 'ega_gameMeta' }, `${t('until')} ${formatTime(game.endsAt, t)}`)
+                      : null))))),
+          h('div', { className: 'ega_card' },
+            h('h3', { className: 'ega_cardTitle' },
+              t('claimedTitle'),
+              h('span', { className: 'ega_count' }, String(claimed.length))),
+            claimed.length === 0
+              ? h('p', { className: 'ega_empty' }, t('claimedEmpty'))
+              : h('ul', { className: 'ega_list' },
+                claimed.map((entry, index) => h('li', {
+                  key: `${entry.claimedAt}-${entry.pageSlug}-${index}`,
+                  className: 'ega_claim',
+                },
+                  h(Cover, { image: entry.image, title: entry.title, small: true }),
+                  h('div', { className: 'ega_claimBody' },
+                    h('span', { className: 'ega_gameTitle' }, entry.title),
+                    h('span', { className: 'ega_claimTime' }, formatTime(entry.claimedAt, t))),
+                  h('span', {
+                    className: entry.outcome === 'claimed' ? 'ega_tag ega_tagClaimed'
+                      : (entry.outcome === 'failed' || entry.outcome === 'error') ? 'ega_tag ega_tagFailed' : 'ega_tag',
+                  }, entry.outcome === 'claimed' ? t('outcomeClaimed')
+                    : entry.outcome === 'already-owned' ? t('outcomeAlreadyOwned')
+                      : entry.outcome === 'failed' ? t('outcomeFailed')
+                        : entry.outcome === 'error' ? t('outcomeError') : t('outcomeSkipped')))))),
         h('div', { className: 'ega_card' },
           h('h3', { className: 'ega_cardTitle' }, t('logTitle')),
           h('ul', { className: 'ega_log' },
@@ -342,15 +412,8 @@ window.__ModuleLoader__.load({
               className: entry.level === 'error' ? 'ega_bad' : entry.level === 'warn' ? 'ega_warn' : null,
             },
               h('span', { className: 'ega_logTime' }, formatTime(entry.at, t)),
-              renderEvent(t, entry))))),
-        h('p', { className: 'ega_intro' }, t('settingsHint')));
-    }
-
-    /** Localize a `{code, params}` activity entry; legacy raw text falls through. */
-    function renderEvent(t, entry) {
-      const template = entry.code ? t(entry.code) : null;
-      if (typeof template !== 'string' || template === entry.code) return entry.text ?? entry.code ?? '';
-      return template.replace(/\{(\w+)\}/g, (_, key) => String(entry.params?.[key] ?? ''));
+              renderEvent(t, entry)))))),
+        h('p', { className: 'ega_foot' }, t('settingsHint')));
     }
 
     /** Left-rail icon: gift box with a play cut, tinted by the shell. */
@@ -383,7 +446,7 @@ window.__ModuleLoader__.load({
           name: 'main',
           key: 'epicgames',
           locale: NS,
-          inject: () => ({ t }),
+          inject: () => ({ t, variant: 'panel' }),
         }, Page));
 
         // The left-sidebar entry itself.
@@ -395,7 +458,7 @@ window.__ModuleLoader__.load({
           locale: NS,
         }, PanelIcon));
 
-        // Also reachable from Settings.
+        // Also reachable from Settings (narrow surface).
         ctx.slots.inject('settings.section', () => ctx.slots.register({
           name: 'settings.section',
           id: 'epicgames-auto',
